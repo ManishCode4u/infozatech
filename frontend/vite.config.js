@@ -25,7 +25,7 @@ export default defineConfig({
   
   // Agar build ke time bhi issues ho
   build: {
-    sourcemap: true,           // Debugging ke liye helpful
+    sourcemap: false,           // Set to false to prevent OOM and reduce build size
     rollupOptions: {
       output: {
         manualChunks: {

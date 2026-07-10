@@ -35,7 +35,11 @@ function clearDirSync(dir) {
 try {
   // 1. Build Frontend
   console.log('📦 [1/3] Building frontend...');
-  execSync('npm run build', { cwd: path.join(__dirname, 'frontend'), stdio: 'inherit' });
+  execSync('npm run build', {
+    cwd: path.join(__dirname, 'frontend'),
+    stdio: 'inherit',
+    env: { ...process.env, NODE_OPTIONS: '--max-old-space-size=8192' }
+  });
   console.log('✅ Frontend built successfully in frontend/dist');
 
   // 2. Sync to dist/public
