@@ -1,3 +1,5 @@
+import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
@@ -9,18 +11,48 @@ export default {
     extend: {
       /* 🎨 Brand Colors */
       colors: {
-        primary: "#2563EB",   // Main Blue
-        secondary: "#0ea5e9", // Light Blue
-        accent: "#111827",    // Dark text
-        background: "#f8fafc",
-        primaryLight: "#EFF6FF",
+        brandGreen: "#10B981",
+        brandDark: "#0B1120",
+        primary: {
+          DEFAULT: "#2563EB",   // Main Blue (matching the logo)
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "#10B981", // Brand Green
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        background: "hsl(var(--background))",
+        primaryLight: "#EEF2FF",
         dark: "#111827",
-        muted: "#64748B",
+        muted: {
+          DEFAULT: "#64748B",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        foreground: "hsl(var(--foreground))",
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
       },
 
       /* 🔤 Fonts */
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Outfit", "Inter", '"Space Grotesk"', "system-ui", "sans-serif"],
       },
 
       /* 🧠 Typography Polish */
@@ -43,7 +75,32 @@ export default {
       transitionTimingFunction: {
         smooth: "cubic-bezier(0.4, 0, 0.2, 1)",
       },
+      animation: {
+        aurora: "aurora 60s linear infinite",
+      },
+      keyframes: {
+        aurora: {
+          from: {
+            backgroundPosition: "50% 50%, 50% 50%",
+          },
+          to: {
+            backgroundPosition: "350% 50%, 350% 50%",
+          },
+        },
+      },
     },
   },
-  plugins: [],
+  plugins: [addVariablesForColors],
 };
+
+// This plugin adds each Tailwind color as a global CSS variable, e.g. var(--gray-200).
+function addVariablesForColors({ addBase, theme }) {
+  let allColors = flattenColorPalette(theme("colors"));
+  let newVars = Object.fromEntries(
+    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+  );
+
+  addBase({
+    ":root": newVars,
+  });
+}

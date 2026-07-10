@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1783664246197",
+    "name": "Manish Gupta",
+    "email": "manish12643@gmail.com",
+    "contact": "9155596712",
+    "role": "Full Stack Developer",
+    "location": "Greater Noida",
+    "whyJoinUs": "funfghjkl;",
+    "createdAt": "2026-07-10T06:17:26.198Z"
+  },
+  {
+    "id": "1783665679983",
+    "name": "Test Candidate",
+    "email": "testcandidate@example.com",
+    "contact": "9876543210",
+    "role": "Backend Developer",
+    "location": "Patna / Remote",
+    "whyJoinUs": "I want to join InfozaTech to build next-generation applications and scale my engineering skills.",
+    "createdAt": "2026-07-10T06:41:19.984Z"
+  },
+  {
+    "id": "1783669501504",
+    "name": "Manish Kumar",
+    "email": "manish12643@gmail.com",
+    "contact": "9155596712",
+    "role": "Full Stack Developer",
+    "location": "Delhi",
+    "whyJoinUs": "hi sir i mam manish im join infozatech because i need some mony and explore real p[rojects ",
+    "createdAt": "2026-07-10T07:45:01.504Z"
+  }
+]

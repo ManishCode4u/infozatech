@@ -36,15 +36,15 @@ const FAQ = () => {
       <div
         className="text-center max-w-3xl mx-auto mb-14"
       >
-        <span className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 bg-blue-100 px-6 py-2 rounded-full mb-6">
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB] bg-[#2563EB]/5 px-6 py-2 rounded-full mb-6 border border-[#2563EB]/15">
           ● FAQ
         </span>
 
-        <h2 className="text-4xl sm:text-5xl font-[700] tracking-tight text-[#0f172a]">
-          Frequently Asked <span className="text-blue-600">Questions</span>
+        <h2 className="text-4xl sm:text-5xl font-[700] tracking-tight text-[#0F0F0F]">
+          Frequently Asked <span className="text-[#2563EB]">Questions</span>
         </h2>
 
-        <p className="mt-4 text-base sm:text-lg text-[#64748b]">
+        <p className="mt-4 text-base sm:text-lg text-slate-500">
           Everything you need to know about working with InfozaTech
         </p>
       </div>
@@ -63,19 +63,19 @@ const FAQ = () => {
           const isOpen = openIndex === index;
 
           return (
-            <div key={index} className="border-b last:border-b-0">
+            <div key={index} className="border-b last:border-b-0 border-slate-200">
               <button
                 onClick={() => setOpenIndex(isOpen ? null : index)}
                 className="w-full flex items-center justify-between px-8 py-6 text-left group"
               >
-                <span className="text-lg font-medium text-[#0f172a] group-hover:text-blue-600 transition">
+                <span className="text-lg font-medium text-[#0F0F0F] group-hover:text-[#2563EB] transition">
                   {item.q}
                 </span>
 
                 {/* PLUS ICON */}
                 <span
                   className={`
-                    text-2xl font-light text-blue-600
+                    text-2xl font-light text-[#2563EB]
                     transition-transform duration-300
                     ${isOpen ? "rotate-45" : "rotate-0"}
                   `}
@@ -91,7 +91,7 @@ const FAQ = () => {
                   ${isOpen ? "max-h-40 pb-6" : "max-h-0"}
                 `}
               >
-                <p className="text-[#64748b] leading-relaxed">
+                <p className="text-slate-500 leading-relaxed">
                   {item.a}
                 </p>
               </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import OurTeam from '../components/sections/OurTeam';
 
 const AboutInfozaTechPage = () => {
   const [visible, setVisible] = useState(false);
@@ -34,18 +35,25 @@ const AboutInfozaTechPage = () => {
       </section>
 
       {/* MOVING STRIP */}
-      <div className="relative w-full overflow-hidden bg-[#0f172a] py-4 md:py-5 border-y border-neutral-900 z-10">
+      <div className="relative w-full overflow-hidden bg-[#0f172a] border-y border-slate-800 py-4 sm:py-5 z-10 shadow-[0_10px_30px_rgba(0,0,0,0.2)]">
+        {/* Shimmer Flash Effect */}
+        <div className="absolute top-0 left-0 h-full w-[80px] md:w-[120px] bg-gradient-to-r from-transparent via-white/10 to-transparent z-20 animate-shimmer-sweep pointer-events-none"></div>
+
+        {/* Fade effect edges */}
+        <div className="absolute inset-y-0 left-0 w-16 md:w-32 bg-gradient-to-r from-[#0f172a] to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute inset-y-0 right-0 w-16 md:w-32 bg-gradient-to-l from-[#0f172a] to-transparent z-10 pointer-events-none"></div>
+        
         <div className="flex animate-marquee-left w-max items-center">
           {[...Array(2)].map((_, i) => (
-             <div key={i} className="flex items-center" aria-hidden={i === 1}>
-               <span className="text-sm md:text-base font-bold uppercase tracking-[0.2em] text-white mx-8 whitespace-nowrap">Develop it from Best</span>
-               <span className="text-neutral-600 mx-4 whitespace-nowrap">•</span>
-               <span className="text-sm md:text-base font-bold uppercase tracking-[0.2em] text-white mx-8 whitespace-nowrap">Build Smart</span>
-               <span className="text-neutral-600 mx-4 whitespace-nowrap">•</span>
-               <span className="text-sm md:text-base font-bold uppercase tracking-[0.2em] text-white mx-8 whitespace-nowrap">Launch Fast</span>
-               <span className="text-neutral-600 mx-4 whitespace-nowrap">•</span>
-               <span className="text-sm md:text-base font-bold uppercase tracking-[0.2em] text-white mx-8 whitespace-nowrap">Scale Easily</span>
-               <span className="text-neutral-600 mx-4 whitespace-nowrap">•</span>
+             <div key={i} className="flex items-center text-slate-300" aria-hidden={i === 1}>
+               <span className="text-lg md:text-xl font-bold mx-8 hover:text-white transition-colors cursor-default whitespace-nowrap">Develop it from Best</span>
+               <span className="text-purple-500 mx-4 md:mx-6 text-lg">✦</span>
+               <span className="text-lg md:text-xl font-bold mx-8 hover:text-white transition-colors cursor-default whitespace-nowrap">Build Smart</span>
+               <span className="text-purple-500 mx-4 md:mx-6 text-lg">✦</span>
+               <span className="text-lg md:text-xl font-bold mx-8 hover:text-white transition-colors cursor-default whitespace-nowrap">Launch Fast</span>
+               <span className="text-purple-500 mx-4 md:mx-6 text-lg">✦</span>
+               <span className="text-lg md:text-xl font-bold mx-8 hover:text-white transition-colors cursor-default whitespace-nowrap">Scale Easily</span>
+               <span className="text-purple-500 mx-4 md:mx-6 text-lg">✦</span>
              </div>
           ))}
         </div>
@@ -82,58 +90,9 @@ const AboutInfozaTechPage = () => {
       </section>
 
       {/* SECTION 4: TEAM SECTION */}
-      <section className="pt-6 md:pt-8 pb-20 md:pb-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          {/* Header */}
-          <div className="mb-12 text-center">
-            <span className="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-600 mb-3 text-xs font-semibold tracking-wider uppercase">Our Team</span>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Team Behind InfozaTech</h2>
-          </div>
-          
-          {/* Scalable Grid Layout: 1 col mobile, 2 tablet, 4 desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-            
-            {/* Team Card (Overlay Style) */}
-            <div className="relative group rounded-2xl overflow-hidden h-[280px] w-full border border-slate-100/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              
-              {/* Abstract Full Card Image */}
-              <img 
-                src="/images/founder_left.jpg" 
-                alt="Manish Gupta" 
-                className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-in-out"
-              />
-              
-              {/* Bottom Overlay Info Box */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] bg-white/95 backdrop-blur-md p-3.5 rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.06)] text-center group-hover:bg-white transition-colors duration-300">
-                <h3 className="text-base font-bold text-slate-900 leading-tight">Manish Gupta</h3>
-                <p className="text-[13px] font-medium text-slate-500 mt-0.5">Founder</p>
-              </div>
-              
-            </div>
-
-            {/* Team Card 2 (Lead Generation) */}
-            <div className="relative group rounded-2xl overflow-hidden h-[280px] w-full border border-slate-100/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-              
-              {/* Abstract Full Card Image */}
-              <img 
-                src="/images/satyam_singh.jpg" 
-                alt="Satyam Singh" 
-                className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-in-out"
-              />
-              
-              {/* Bottom Overlay Info Box */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 w-[85%] bg-white/95 backdrop-blur-md p-3.5 rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.06)] text-center group-hover:bg-white transition-colors duration-300">
-                <h3 className="text-base font-bold text-slate-900 leading-tight">Satyam Singh</h3>
-                <p className="text-[13px] font-medium text-slate-500 mt-0.5">Lead Generation Executive</p>
-              </div>
-              
-            </div>
-
-            {/* Empty slots for scalable future members seamlessly fit here */}
-            
-          </div>
-        </div>
-      </section>
+      <div className="relative z-10">
+        <OurTeam />
+      </div>
 
     </div>
   );

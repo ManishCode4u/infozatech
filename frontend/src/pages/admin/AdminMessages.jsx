@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import API_URL from "../../config";
 import { Search, Eye, X, Trash2, RefreshCw } from "lucide-react";

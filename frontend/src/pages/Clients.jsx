@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -183,7 +184,6 @@ const ClientsTestimonialsPage = () => {
   </div>
 </section>
 
-
       {/* CTA Section */}
       <section className="py-20 px-4 bg-white dark:bg-gray-900 text-center">
         <div className="max-w-md mx-auto">
@@ -195,17 +195,19 @@ const ClientsTestimonialsPage = () => {
           </p>
           
           <Link to="/contact" className="w-full">
-  <button className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 group">
-    <span>Start Your Project</span>
-    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-    </svg>
-  </button>
-</Link>
+            <button className="w-full bg-blue-700 hover:bg-blue-800 text-white font-semibold py-4 rounded-xl shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2 group">
+              <span>Start Your Project</span>
+              <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </Link>
           
-          <button className="mt-4 w-full bg-transparent text-[#64748b] dark:text-gray-400 font-medium py-3 text-sm hover:text-blue-700 dark:hover:text-blue-400 transition-colors">
-            Schedule a Consultation
-          </button>
+          <Link to="/contact" className="w-full">
+            <button className="mt-4 w-full bg-transparent text-[#64748b] dark:text-gray-400 font-medium py-3 text-sm hover:text-blue-700 dark:hover:text-blue-400 transition-colors">
+              Schedule a Consultation
+            </button>
+          </Link>
         </div>
       </section>
     </div>

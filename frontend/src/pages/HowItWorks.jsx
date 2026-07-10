@@ -1,3 +1,4 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -83,16 +84,32 @@ const CardAnimation = () => {
   );
 };
 
+// Simple typewriter component for Framer Motion
+const TypewriterText = ({ text, delay = 0 }) => {
+  return (
+    <span className="inline-block">
+      {text.split("").map((char, index) => (
+        <motion.span
+          key={`${char}-${index}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.05, delay: delay + index * 0.04 }}
+        >
+          {char}
+        </motion.span>
+      ))}
+    </span>
+  );
+};
+
 // --- COMPONENT FOR STEP 2: DESIGN ---
 const DesignAnimation = () => {
   const [stage, setStage] = useState(0); 
 
   useEffect(() => {
     const cycle = async () => {
-      setStage(0);
-      await new Promise(r => setTimeout(r, 1500));
       setStage(1);
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 3000));
       setStage(2);
       await new Promise(r => setTimeout(r, 3500));
       cycle();
@@ -107,73 +124,99 @@ const DesignAnimation = () => {
         InfozaTech
       </div>
 
-      <AnimatePresence mode="wait">
-        {stage === 0 && (
-          <motion.div
-            key="dots"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex gap-2"
-          >
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                className="w-3 h-3 bg-white rounded-full"
-                animate={{ y: [0, -8, 0] }}
-                transition={{ repeat: Infinity, duration: 0.6, delay: i * 0.1 }}
-              />
-            ))}
-          </motion.div>
-        )}
+      <div className="w-full max-w-[280px] bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-3.5 shadow-2xl relative">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <div className="text-[10px] font-bold text-white/80 uppercase tracking-wide">
+            System Match
+          </div>
+          <div className="flex gap-1.5">
+            <div className={`h-1.5 w-1.5 rounded-full ${stage === 1 ? 'bg-white/20 animate-pulse' : 'bg-green-400 shadow-[0_0_5px_#4ade80]'}`} />
+            <div className={`h-1.5 w-1.5 rounded-full ${stage === 1 ? 'bg-white/20 animate-pulse delay-75' : 'bg-green-400 shadow-[0_0_5px_#4ade80]'}`} />
+            <div className={`h-1.5 w-1.5 rounded-full ${stage === 1 ? 'bg-white/20 animate-pulse delay-150' : 'bg-green-400 shadow-[0_0_5px_#4ade80]'}`} />
+          </div>
+        </div>
 
-        {(stage === 1 || stage === 2) && (
-          <motion.div
-            key="ui-container"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-[280px] bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-3.5 shadow-2xl relative overflow-hidden"
-          >
-            <div className="flex items-center justify-between mb-3 px-1">
-              <motion.div 
-                className={`h-2 w-12 rounded-full ${stage === 1 ? 'bg-white/20' : 'bg-white/60'}`}
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <div className="flex gap-2">
-                <div className={`h-1.5 w-6 rounded-full ${stage === 1 ? 'bg-white/10' : 'bg-white/40'}`} />
-                <div className={`h-1.5 w-6 rounded-full ${stage === 1 ? 'bg-white/10' : 'bg-white/40'}`} />
+        <div className="w-full h-16 rounded-xl mb-3 flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-400/30 to-indigo-500/30 shadow-inner border border-blue-300/30">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={stage}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="flex flex-col items-center"
+            >
+              <div className="text-[12px] md:text-[13px] text-white font-medium z-10 min-h-[1.2rem]">
+                {stage === 1 ? <TypewriterText key="analyzing" text="Analyzing Request..." /> : <TypewriterText key="match" text="Perfect Match Found!" />}
               </div>
-            </div>
-
-            <motion.div 
-              className={`w-full h-16 rounded-xl mb-3 relative overflow-hidden ${stage === 1 ? 'bg-white/5 border border-dashed border-white/20' : 'bg-gradient-to-br from-blue-300/40 to-blue-500/40 shadow-inner'}`}
-              layout
-            >
-              {stage === 2 && (
-                <motion.div 
-                  className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent"
-                  animate={{ x: [-280, 280] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                />
-              )}
+              <div className="text-[9px] text-white/60 mt-1 z-10 min-h-[0.9rem]">
+                {stage === 1 ? <TypewriterText key="finding" text="Finding the best roadmap" delay={0.4} /> : <TypewriterText key="expert" text="Expert team & solution ready" delay={0.4} />}
+              </div>
             </motion.div>
+          </AnimatePresence>
 
-            <div className="space-y-2 mb-3">
-              <motion.div className={`h-1.5 w-3/4 rounded-full ${stage === 1 ? 'bg-white/10' : 'bg-white/30'}`} />
-              <motion.div className={`h-1.5 w-1/2 rounded-full ${stage === 1 ? 'bg-white/10' : 'bg-white/20'}`} />
-            </div>
-
+          {stage === 2 && (
             <motion.div 
-              className={`h-6 w-16 rounded-lg flex items-center justify-center ${stage === 1 ? 'border border-white/20' : 'bg-white text-[9px] font-bold text-blue-600 shadow-lg'}`}
-              whileHover={{ scale: 1.05 }}
+              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent"
+              animate={{ x: [-280, 280] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            />
+          )}
+        </div>
+
+        <div className="flex justify-between items-center px-1">
+          <div className="flex flex-col gap-1">
+            <div className="h-1.5 w-16 rounded-full bg-white/20" />
+            <div className="h-1.5 w-10 rounded-full bg-white/10" />
+          </div>
+          <div className="relative">
+            <div 
+              className="h-6 px-3 rounded-lg flex items-center justify-center bg-white text-[10px] font-bold text-blue-600 shadow-lg transition-all duration-300 relative z-10"
             >
-              {stage === 2 && "Explore"}
-            </motion.div>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={stage}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {stage === 1 ? "Matching..." : "View Plan"}
+                </motion.span>
+              </AnimatePresence>
+            </div>
+            {/* Button click ripple */}
+            {stage === 2 && (
+              <motion.div
+                className="absolute inset-0 rounded-lg border-2 border-white bg-white/40"
+                initial={{ opacity: 0, scale: 1 }}
+                animate={{ opacity: [0, 1, 0], scale: [1, 1.4, 1.6] }}
+                transition={{ duration: 0.6, delay: 1.8, ease: "easeOut" }}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Animated Mouse Cursor */}
+        {stage === 2 && (
+          <motion.div
+            className="absolute z-50 pointer-events-none drop-shadow-lg"
+            style={{ bottom: "1rem", right: "2.5rem" }}
+            initial={{ x: 60, y: 80, opacity: 0 }}
+            animate={{ 
+              x: [60, -5, -5, -5], 
+              y: [80, 5, 5, 5], 
+              opacity: [0, 1, 1, 0],
+              scale: [1, 1, 0.8, 1]
+            }}
+            transition={{ duration: 2.2, delay: 1.2, ease: "easeInOut", times: [0, 0.27, 0.36, 1] }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M5.5 3L18.5 10L12 12.5L14 19L11 20.5L9 14L4 16.5V3Z" fill="#1e293b" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+            </svg>
           </motion.div>
         )}
-      </AnimatePresence>
+      </div>
 
       <motion.div 
         className="absolute bottom-3 text-[10px] text-white/50 font-medium tracking-wide"
@@ -338,15 +381,15 @@ const DeliveryAnimation = () => {
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="bg-[#f8fafc] py-24 md:py-32 px-6">
+    <section id="how-it-works" className="bg-[#FFFFFF] py-24 md:py-32 px-6">
       <div className="text-center max-w-4xl mx-auto mb-20 text-balance">
-        <span className="inline-flex items-center gap-2 text-[13px] font-bold tracking-wider uppercase text-blue-600 bg-blue-50 px-4 py-1.5 rounded-full mb-6 border border-blue-100/50">
+        <span className="inline-flex items-center gap-2 text-[13px] font-bold tracking-wider uppercase text-[#2563EB] bg-[#2563EB]/5 px-4 py-1.5 rounded-full mb-6 border border-[#2563EB]/15">
           How It Works
         </span>
 
-        <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-[1.1] mb-6 tracking-tight">
+        <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-[#0F0F0F] leading-[1.1] mb-6 tracking-tight">
           Three simple steps to <br className="hidden md:block" />
-          <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <span className="text-[#2563EB]">
             InfozaTech
           </span>
         </h2>
@@ -359,7 +402,7 @@ const HowItWorks = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
         {steps.map((item, index) => (
           <div key={index} className="flex flex-col h-full group">
-            <div className="relative aspect-[16/10] w-full bg-[#2563eb] rounded-[2rem] overflow-hidden mb-10 shadow-lg shadow-blue-500/10">
+            <div className="relative aspect-[16/10] w-full bg-[#0F0F0F] rounded-[2rem] overflow-hidden mb-10 shadow-md">
               {item.videoUrl ? (
                 <video autoPlay muted loop playsInline className="w-full h-full object-cover">
                   <source src={item.videoUrl} type="video/mp4" />
@@ -375,12 +418,12 @@ const HowItWorks = () => {
 
             <div className="flex flex-col flex-grow mt-2">
               <div className="flex items-start gap-4 mb-4">
-                <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#eff6ff] flex items-center justify-center text-[#3b82f6] font-bold text-base transition-all duration-300 group-hover:bg-[#2563eb] group-hover:text-white group-hover:shadow-lg group-hover:shadow-blue-500/20">
+                <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#2563EB]/5 flex items-center justify-center text-[#2563EB] font-bold text-base transition-all duration-300 group-hover:bg-[#2563EB] group-hover:text-white group-hover:shadow-md">
                   {item.step}
                 </div>
 
                 <div className="flex flex-col text-balance">
-                  <h3 className="text-lg md:text-xl md:text-2xl font-bold text-[#111827] leading-tight mb-3 transition-colors duration-300 group-hover:text-[#2563eb]">
+                  <h3 className="text-lg md:text-xl md:text-2xl font-bold text-[#0F0F0F] leading-tight mb-3 transition-colors duration-300 group-hover:text-[#2563EB]">
                     {item.subtitle}
                   </h3>
                   

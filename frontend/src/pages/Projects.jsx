@@ -1,33 +1,62 @@
+/* eslint-disable */
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { projectsData } from "../data/projects";
 import { ScrollReveal } from "../components/ui/scroll-reveal";
+import { MeshGradient } from "@paper-design/shaders-react";
 
 const Projects = ({ page = false }) => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("Websites");
 
-  const filteredProjects = projectsData.filter(p => p.category === activeCategory);
+  const filteredProjects = projectsData.filter(p => {
+    if (p.category !== activeCategory) return false;
+    if (!page && p.hideOnHome) return false;
+    return true;
+  });
 
 
 
   return (
     <section 
-      style={{ fontFamily: "'Inter', 'Poppins', sans-serif" }}
-      className={`relative w-full overflow-hidden ${page ? "bg-[#f8fafc] pt-24 pb-20" : "bg-gradient-to-r from-[#f8fafc] to-[#f1f5f9] py-12 lg:py-14"} px-4 md:px-6`}
+      id="projects"
+      className={`relative w-full overflow-hidden transition-colors duration-500 ${
+        page ? "bg-slate-950 text-white pt-24 pb-20" : "bg-white text-[#0F0F0F] py-12 lg:py-14"
+      } px-4 md:px-6`}
     >
-      {/* 6. Subtle Grid Pattern */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9Ii43NSIgZmlsbD0iI2NlZTRlNiIvPjwvc3ZnPg==')] opacity-20 z-0 pointer-events-none"></div>
+      {/* Mesh Shader Background for Standalone Page */}
+      {page && (
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-85">
+          <MeshGradient
+            style={{ height: "100%", width: "100%" }}
+            distortion={0.8}
+            swirl={0.1}
+            offsetX={0}
+            offsetY={0}
+            scale={1}
+            rotation={0}
+            speed={0.8}
+            colors={["hsl(216, 90%, 27%)", "hsl(243, 68%, 36%)", "hsl(205, 91%, 64%)", "hsl(211, 61%, 57%)"]}
+          />
+        </div>
+      )}
 
-      {/* 7. Soft abstract shapes (hidden on mobile to prevent overflow) */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-[#60a5fa] rounded-full mix-blend-multiply opacity-20 blur-[60px] pointer-events-none hidden md:block"></div>
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#a78bfa] rounded-full mix-blend-multiply opacity-20 blur-[60px] pointer-events-none hidden md:block"></div>
+      {/* 6. Subtle Grid Pattern */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMSIgY3k9IjEiIHI9Ii43NSIgZmlsbD0iI2NlZTRlNiIvPjwvc3ZnPg==')] opacity-[0.03] z-0 pointer-events-none"></div>
+
+      {/* Soft abstract shapes (hidden on mobile to prevent overflow) */}
+      {!page && (
+        <>
+          <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-[#60a5fa]/10 rounded-full mix-blend-multiply opacity-20 blur-[60px] pointer-events-none hidden md:block"></div>
+          <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#a78bfa]/10 rounded-full mix-blend-multiply opacity-20 blur-[60px] pointer-events-none hidden md:block"></div>
+        </>
+      )}
 
       {/* Return Button for Standalone Page */}
       {page && (
         <button
           onClick={() => navigate(-1)}
-          className="fixed top-20 md:top-24 left-4 md:left-6 bg-white text-[#0f172a] w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xl font-[700] shadow-md hover:shadow-lg hover:-translate-y-1 transition-all duration-300 z-50 border border-[#e2e8f0]"
+          className="fixed top-20 md:top-24 left-4 md:left-6 bg-white/10 backdrop-blur-md text-white w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-xl font-[700] shadow-lg hover:bg-white/20 hover:-translate-y-1 transition-all duration-300 z-50 border border-white/15"
         >
           ←
         </button>
@@ -40,14 +69,15 @@ const Projects = ({ page = false }) => {
           
           {/* 1. Badge */}
           <div 
-            className="inline-block font-medium mb-2"
+            className="inline-block font-semibold mb-2"
             style={{
               fontSize: '12px',
               padding: '6px 14px',
               borderRadius: '999px',
-              background: '#f1f5f9',
-              color: '#111',
-              boxShadow: '0 4px 10px rgba(0,0,0,0.05)'
+              background: page ? 'rgba(255,255,255,0.08)' : 'rgba(37,99,235,0.05)',
+              color: page ? '#fff' : '#2563EB',
+              border: page ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(37,99,235,0.15)',
+              boxShadow: '0 2px 5px rgba(0,0,0,0.02)'
             }}
           >
             Projects
@@ -55,9 +85,9 @@ const Projects = ({ page = false }) => {
 
           {/* 2. Heading */}
           <h2 
-            className="text-[#0f172a] tracking-tight text-3xl md:text-[38px]"
+            className={`${page ? 'text-white' : 'text-[#0F0F0F]'} tracking-tight text-3xl md:text-[38px]`}
             style={{
-              fontWeight: 600,
+              fontWeight: 700,
               marginTop: '10px',
               marginBottom: '20px'
             }}
@@ -74,10 +104,10 @@ const Projects = ({ page = false }) => {
                 borderRadius: '12px',
                 border: 'none',
                 fontSize: '14px',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
-                background: activeCategory === "Websites" ? '#000' : '#f1f1f1',
-                color: activeCategory === "Websites" ? '#fff' : '#333',
+                background: activeCategory === "Websites" ? (page ? '#fff' : '#0F0F0F') : (page ? 'rgba(255,255,255,0.08)' : '#f1f5f9'),
+                color: activeCategory === "Websites" ? (page ? '#0F0F0F' : '#fff') : (page ? 'rgba(255,255,255,0.6)' : '#475569'),
                 transition: 'all 0.3s ease'
               }}
             >
@@ -90,10 +120,10 @@ const Projects = ({ page = false }) => {
                 borderRadius: '12px',
                 border: 'none',
                 fontSize: '14px',
-                fontWeight: 500,
+                fontWeight: 600,
                 cursor: 'pointer',
-                background: activeCategory === "Applications" ? '#000' : '#f1f1f1',
-                color: activeCategory === "Applications" ? '#fff' : '#333',
+                background: activeCategory === "Applications" ? (page ? '#fff' : '#0F0F0F') : (page ? 'rgba(255,255,255,0.08)' : '#f1f5f9'),
+                color: activeCategory === "Applications" ? (page ? '#0F0F0F' : '#fff') : (page ? 'rgba(255,255,255,0.6)' : '#475569'),
                 transition: 'all 0.3s ease'
               }}
             >
@@ -117,11 +147,17 @@ const Projects = ({ page = false }) => {
             >
               {/* IMAGE COLUMN (Sticky Scroll preserved) */}
               <div className="w-full lg:w-1/2 lg:sticky lg:top-32 flex items-center justify-center">
-                <div className="w-full h-[320px] md:h-[400px] lg:h-[450px] rounded-[48px] bg-[#f8fafc] flex items-center justify-center p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white hover:shadow-lg transition-shadow duration-500 overflow-hidden">
+                <div className={`w-full h-[280px] md:h-[340px] lg:h-[400px] rounded-[48px] ${
+                  page 
+                    ? 'bg-white/5 border border-white/10 shadow-2xl backdrop-blur-sm' 
+                    : 'bg-slate-50 border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.02)]'
+                } flex items-center justify-center p-1.5 hover:shadow-md transition-shadow duration-500 overflow-hidden`}>
                   <img 
                     src={project.image} 
                     alt={project.title} 
-                    className="w-full h-full object-contain rounded-[44px] shadow-[0_4px_25px_rgba(0,0,0,0.08)] hover:scale-[1.02] transition-transform duration-700 ease-out" 
+                    className={`w-full h-full rounded-[44px] shadow-[0_4px_25px_rgba(0,0,0,0.05)] hover:scale-[1.02] transition-transform duration-700 ease-out ${
+                      project.imagePosition || 'object-cover object-center'
+                    }`}
                   />
                 </div>
               </div>
@@ -131,14 +167,18 @@ const Projects = ({ page = false }) => {
                 
                 {/* 5. Top Control / Label */}
                 <div 
-                   className="inline-block rounded-full bg-[#f1f5f9] text-[#0f172a] font-medium"
+                   className={`inline-block rounded-full font-bold ${
+                     page 
+                       ? 'bg-white/10 text-white border border-white/15' 
+                       : 'bg-[#2563EB]/5 text-[#2563EB] border border-[#2563EB]/10'
+                   }`}
                    style={{ fontSize: '13px', padding: '8px 18px' }}
-                >
+                 >
                   🚀 {project.category === "Applications" ? "Our App" : "Our Work"}
                 </div>
 
                 <h3 
-                  className="font-[600] text-[#0f172a] leading-[1.1] text-2xl md:text-[34px]"
+                  className={`font-[700] ${page ? 'text-white' : 'text-[#0F0F0F]'} leading-[1.1] text-2xl md:text-[34px]`}
                   style={{ 
                     letterSpacing: '-0.8px',
                     marginTop: '16px',
@@ -150,7 +190,7 @@ const Projects = ({ page = false }) => {
 
                 {/* 1. Paragraph Formatting & 2. Spacing Fix & 4. Content Width */}
                 <p 
-                  className="text-[#475569]/90 leading-[1.6]"
+                  className={`${page ? 'text-slate-200' : 'text-slate-600'} leading-[1.6]`}
                   style={{ 
                     fontSize: '16px', 
                     marginBottom: '12px', 
@@ -161,15 +201,18 @@ const Projects = ({ page = false }) => {
                 </p>
 
                 {/* Feature List */}
-                {/* 2. Reduce gap between bullet/points: gap: 10px-12px */}
                 <div className="flex flex-col w-full max-w-[600px] mt-6 mb-8" style={{ gap: '16px' }}>
                   {project.features.slice(0, 4).map((feature, i) => (
                     <div key={i} className="flex items-start gap-6">
-                      {/* Numbered Style */}
-                      <div className="shrink-0 rounded-[10px] bg-[#f1f5f9] text-[#0f172a] font-[700] text-[12px] flex items-center justify-center mt-0.5" style={{ width: '26px', height: '26px' }}>
+                       {/* Numbered Style */}
+                      <div className={`shrink-0 rounded-[10px] ${
+                        page 
+                          ? 'bg-white/10 text-white' 
+                          : 'bg-[#2563EB]/5 text-[#2563EB]'
+                      } font-[700] text-[12px] flex items-center justify-center mt-0.5`} style={{ width: '26px', height: '26px' }}>
                         {String(i + 1).padStart(2, '0')}
                       </div>
-                      <span className="text-[#475569] font-[400] leading-[1.5]" style={{ fontSize: '15.5px' }}>
+                      <span className={`${page ? 'text-slate-300' : 'text-slate-600'} font-[400] leading-[1.5]`} style={{ fontSize: '15.5px' }}>
                         {feature}
                       </span>
                     </div>
@@ -182,7 +225,11 @@ const Projects = ({ page = false }) => {
                     href={project.liveLink} 
                     target="_blank" 
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center bg-[#0a0a0a] text-white rounded-[14px] font-[600] hover:bg-black shadow-xl shadow-black/10 hover:shadow-black/20 hover:-translate-y-0.5 transition-all duration-300"
+                    className={`inline-flex items-center justify-center ${
+                      page 
+                        ? 'bg-white text-slate-950 hover:bg-slate-100 shadow-[0_4px_20px_rgba(255,255,255,0.1)]' 
+                        : 'bg-[#2563EB] text-white hover:bg-[#1d4ed8] shadow-md'
+                    } rounded-[14px] font-[600] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300`}
                     style={{ 
                       fontSize: '15px',
                       padding: '12px 28px'
@@ -200,7 +247,7 @@ const Projects = ({ page = false }) => {
 
       {filteredProjects.length === 0 && (
         <ScrollReveal direction="up">
-          <div className="text-center text-[#64748b] font-[500] py-12 relative z-10">
+          <div className="text-center text-slate-500 font-[500] py-12 relative z-10">
             No projects found in this category.
           </div>
         </ScrollReveal>
@@ -212,7 +259,7 @@ const Projects = ({ page = false }) => {
           <div className="flex justify-center mt-16 md:mt-24 relative z-10">
             <Link
               to="/projects"
-              className="group relative inline-flex items-center gap-2 bg-[#0f172a] hover:bg-black text-white px-10 py-5 rounded-2xl font-semibold shadow-xl shadow-blue-500/10 hover:shadow-blue-500/20 hover:-translate-y-1 transition-all duration-300"
+              className="group relative inline-flex items-center gap-2 bg-[#2563EB] hover:bg-[#1d4ed8] text-white px-10 py-5 rounded-2xl font-semibold shadow-md hover:-translate-y-1 transition-all duration-300"
             >
               <span>View All Projects</span>
               <svg 

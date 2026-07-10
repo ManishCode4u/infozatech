@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, MessageSquare, StickyNote, X } from "lucide-react";
+import { LayoutDashboard, Users, MessageSquare, StickyNote, Briefcase, X } from "lucide-react";
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
@@ -11,6 +11,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
     { name: "Leads", path: "/admin/leads", icon: Users },
     { name: "Messages", path: "/admin/messages", icon: MessageSquare },
     { name: "Notes & Follow-ups", path: "/admin/notes", icon: StickyNote },
+    { name: "Job Applications", path: "/admin/applications", icon: Briefcase },
   ];
 
   return (

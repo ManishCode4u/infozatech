@@ -70,60 +70,60 @@ const Contact = () => {
   return (
     <section
       id="contact"
-      className="relative min-h-screen flex items-center justify-center px-6 py-28 bg-white"
+      className="relative flex flex-col items-center justify-center px-4 sm:px-6 pt-32 pb-16 sm:pt-40 sm:pb-24 bg-[#FFFFFF] min-h-[calc(100vh-80px)]"
     >
       {/* SOFT BACKGROUND GLOWS */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-200/40 blur-[140px]" />
-      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-sky-200/40 blur-[140px]" />
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-50 blur-[140px]" />
+      <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-sky-50 blur-[140px]" />
 
-      {/* PAGE LABEL (FORM KE BAHAR) */}
-      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20">
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 bg-blue-100 px-6 py-2 rounded-full shadow-sm">
+      {/* PAGE LABEL */}
+      <div className="mb-8 z-20">
+        <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider uppercase text-[#2563EB] bg-[#2563EB]/10 border border-[#2563EB]/20 px-6 py-2 rounded-full shadow-sm">
           ● Contact
         </span>
       </div>
 
       {/* MAIN CARD */}
       <div
-        className="relative z-10 max-w-5xl w-full grid md:grid-cols-2
-        rounded-[26px] overflow-hidden border border-blue-100 shadow-xl bg-white"
+        className="relative z-10 max-w-4xl w-full grid md:grid-cols-2
+        rounded-[26px] overflow-hidden border border-slate-200 shadow-xl bg-[#FFFFFF]"
       >
-        {/* LEFT PANEL (BLUE) */}
-        <div className="p-12 bg-blue-600 text-white flex flex-col justify-between">
+        {/* LEFT PANEL (DEEP BLACK) */}
+        <div className="p-12 bg-[#0F0F0F] text-white flex flex-col justify-between">
           <div>
-            <h2 className="text-4xl font-[700] mb-4">
+            <h2 className="text-4xl font-[700] text-white mb-4">
               Let’s Connect
             </h2>
 
-            <p className="text-blue-100 max-w-sm mb-12">
+            <p className="text-slate-400 max-w-sm mb-12">
               Have an idea? We combine design, AI and engineering to craft
               meaningful digital experiences.
             </p>
 
             <div className="space-y-8">
               <div>
-                <p className="text-xs tracking-widest uppercase text-white opacity-80">
+                <p className="text-[11px] tracking-wider uppercase text-slate-500 font-bold">
                   Founder
                 </p>
-                <p className="text-lg font-semibold text-white">
+                <p className="text-lg font-semibold text-white mt-1">
                   Manish Gupta
                 </p>
               </div>
 
               <div>
-                <p className="text-xs tracking-widest uppercase text-white opacity-80">
+                <p className="text-[11px] tracking-wider uppercase text-slate-500 font-bold">
                   Call
                 </p>
-                <p className="text-white">
+                <p className="text-white mt-1 leading-relaxed">
                   +91 9155596712 <br /> +91 9263119717
                 </p>
               </div>
 
               <div>
-                <p className="text-xs tracking-widest uppercase text-white opacity-80">
+                <p className="text-[11px] tracking-wider uppercase text-slate-500 font-bold">
                   Email
                 </p>
-                <p className="text-white">
+                <p className="text-white mt-1">
                   teaminfozatech@gmail.com
                 </p>
               </div>
@@ -132,12 +132,12 @@ const Contact = () => {
         </div>
 
         {/* RIGHT FORM (COMPACT) */}
-        <div className="p-8 bg-white">
-          <h3 className="text-2xl font-[700] text-[#0f172a] mb-2">
+        <div className="p-8 sm:p-12 bg-[#FFFFFF]">
+          <h3 className="text-2xl font-[700] text-[#0F0F0F] mb-2">
             Send a Message
           </h3>
 
-          <p className="text-[#64748b] mb-6 text-sm">
+          <p className="text-slate-500 mb-6 text-sm">
             We usually reply within a few hours.
           </p>
 
@@ -154,9 +154,9 @@ const Contact = () => {
               name="name"
               required
               placeholder="Your Name"
-              className="w-full px-4 py-3 rounded-xl bg-white
-              border border-slate-200 text-[#0f172a] placeholder-slate-400
-              focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50
+              border border-slate-200 text-[#0F0F0F] placeholder-slate-400
+              focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all duration-200"
             />
 
             <input
@@ -164,9 +164,9 @@ const Contact = () => {
               name="email"
               required
               placeholder="Email Address"
-              className="w-full px-4 py-3 rounded-xl bg-white
-              border border-slate-200 text-[#0f172a] placeholder-slate-400
-              focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50
+              border border-slate-200 text-[#0F0F0F] placeholder-slate-400
+              focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all duration-200"
             />
 
             <textarea
@@ -174,14 +174,16 @@ const Contact = () => {
               required
               rows="3"
               placeholder="Describe your project..."
-              className="w-full px-4 py-3 rounded-xl bg-white
-              border border-slate-200 text-[#0f172a] placeholder-slate-400 resize-none
-              focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50
+              border border-slate-200 text-[#0F0F0F] placeholder-slate-400 resize-none
+              focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 transition-all duration-200"
             />
 
             {status.message && (
-              <div className={`p-3 rounded-lg text-sm font-medium ${
-                status.type === "success" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+              <div className={`p-3 rounded-lg text-sm font-medium border ${
+                status.type === "success" 
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200/50" 
+                  : "bg-rose-50 text-rose-700 border-rose-200/50"
               }`}>
                 {status.type === "success" ? "✅ " : "❌ "}
                 {status.message}
@@ -191,9 +193,9 @@ const Contact = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 rounded-xl font-[700] text-white
-              ${loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
-              shadow-md hover:shadow-lg transition flex items-center justify-center gap-2`}
+              className={`w-full py-3 rounded-xl font-[700] text-white transition-all duration-200
+              ${loading ? "bg-blue-400 cursor-not-allowed" : "bg-[#2563EB] hover:bg-[#1d4ed8]"}
+              shadow-sm hover:shadow flex items-center justify-center gap-2`}
             >
               {loading ? (
                 <>

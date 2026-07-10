@@ -24,22 +24,33 @@ export default function AdminDashboard() {
         {stats.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <div key={i} className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-gray-100 dark:border-zinc-800 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start">
+            <div 
+              key={i} 
+              className="relative group bg-white/70 dark:bg-zinc-900/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-100/50 dark:border-zinc-800/80 shadow-sm hover:shadow-indigo-500/10 hover:border-indigo-500/30 transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+            >
+              {/* Subtle background glow */}
+              <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl group-hover:bg-indigo-500/20 transition-all duration-500"></div>
+              
+              <div className="flex justify-between items-start relative z-10">
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.title}</p>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white mt-2 tracking-tight">{stat.value}</h3>
+                  <p className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">{stat.title}</p>
+                  <h3 className="text-3xl font-black text-slate-900 dark:text-white mt-2 tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 dark:from-white dark:to-zinc-300 bg-clip-text text-transparent">{stat.value}</h3>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-zinc-800 flex items-center justify-center">
-                  <Icon size={20} className="text-gray-700 dark:text-gray-300" />
+                <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-zinc-800/50 border border-slate-100/50 dark:border-zinc-700/30 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
+                  <Icon size={22} className="text-indigo-600 dark:text-indigo-400" />
                 </div>
               </div>
-              <div className="mt-4 flex items-center text-sm">
-                <span className={`flex items-center font-medium ${stat.isPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+              
+              <div className="mt-4 flex items-center text-xs relative z-10">
+                <span className={`flex items-center px-2 py-0.5 rounded-full font-semibold ${
+                  stat.isPositive 
+                    ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10' 
+                    : 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10'
+                }`}>
                   {stat.change}
-                  {stat.isPositive && <ArrowUpRight size={16} className="ml-1" />}
+                  {stat.isPositive && <ArrowUpRight size={12} className="ml-0.5" />}
                 </span>
-                <span className="text-gray-400 dark:text-gray-500 ml-2">vs last week</span>
+                <span className="text-slate-400 dark:text-zinc-500 ml-2 font-medium">vs last week</span>
               </div>
             </div>
           );
