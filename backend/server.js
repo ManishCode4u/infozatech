@@ -16,6 +16,7 @@ app.use(express.json());
 
 const fs = require('fs');
 const path = require('path');
+const { supabase, fromSupabaseRow, toSupabaseRow } = require('./supabase');
 
 // File paths for persistence database
 const CONTACTS_FILE = path.join(__dirname, 'contacts.json');
@@ -258,9 +259,34 @@ app.delete('/api/applications/:id', (req, res) => {
       message: "Internal Server Error" 
     });
   }
+});
+
 // 9. GET all verification records (Admin)
-app.get('/api/verifications', (req, res) => {
+app.get('/api/verifications', async (req, res) => {
   try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('verification_records')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Supabase get all verifications error:", error);
+        return res.status(500).json({ 
+          success: false, 
+          message: "Database error fetching verification records: " + error.message,
+          data: []
+        });
+      }
+
+      const formatted = (data || []).map(fromSupabaseRow);
+      return res.status(200).json({
+        success: true,
+        count: formatted.length,
+        data: formatted
+      });
+    }
+
     verifications = readData(VERIFICATIONS_FILE);
     res.status(200).json({
       success: true,
@@ -277,10 +303,10 @@ app.get('/api/verifications', (req, res) => {
 });
 
 // 10. GET public verification lookup by ID (Public - No Admin Auth Required)
-app.get('/api/verifications/verify/:verificationId', (req, res) => {
+app.get('/api/verifications/verify/:verificationId', async (req, res) => {
   try {
     const rawId = req.params.verificationId || "";
-    const cleanId = rawId.trim().toLowerCase();
+    const cleanId = rawId.trim();
 
     if (!cleanId) {
       return res.status(400).json({
@@ -290,14 +316,36 @@ app.get('/api/verifications/verify/:verificationId', (req, res) => {
       });
     }
 
-    verifications = readData(VERIFICATIONS_FILE);
+    let record = null;
 
-    // Case-insensitive lookup matching verificationId, or certificateId, or internshipId
-    const record = verifications.find(v => 
-      (v.verificationId && v.verificationId.trim().toLowerCase() === cleanId) ||
-      (v.certificateId && v.certificateId.trim().toLowerCase() === cleanId) ||
-      (v.internshipId && v.internshipId.trim().toLowerCase() === cleanId)
-    );
+    if (supabase) {
+      // Case-insensitive lookup against verification_id in Supabase
+      const { data, error } = await supabase
+        .from('verification_records')
+        .select('*')
+        .ilike('verification_id', cleanId)
+        .limit(1);
+
+      if (error) {
+        console.error("Supabase public verification query error:", error);
+        return res.status(500).json({ 
+          success: false, 
+          found: false,
+          message: "Verification service temporarily unavailable. Please try again." 
+        });
+      }
+
+      if (data && data.length > 0) {
+        record = fromSupabaseRow(data[0]);
+      }
+    } else {
+      verifications = readData(VERIFICATIONS_FILE);
+      record = verifications.find(v => 
+        (v.verificationId && v.verificationId.trim().toLowerCase() === cleanId.toLowerCase()) ||
+        (v.certificateId && v.certificateId.trim().toLowerCase() === cleanId.toLowerCase()) ||
+        (v.internshipId && v.internshipId.trim().toLowerCase() === cleanId.toLowerCase())
+      );
+    }
 
     if (!record) {
       return res.status(404).json({
@@ -307,20 +355,19 @@ app.get('/api/verifications/verify/:verificationId', (req, res) => {
       });
     }
 
-    // Public sanitized payload (excludes internal notes or private database info)
+    // Public sanitized payload (CRITICAL: NEVER expose email, notes, database IDs, credentials, or internal information)
     const publicDoc = {
       studentName: record.studentName,
       verificationId: record.verificationId,
       documentType: record.documentType,
-      internshipId: record.internshipId || "",
-      certificateId: record.certificateId || "",
       domain: record.domain,
       startDate: record.startDate,
       endDate: record.endDate,
       duration: record.duration,
       status: record.status || "Verified",
       issuedBy: record.issuedBy || "InfozaTech",
-      createdAt: record.createdAt
+      certificateId: record.certificateId || record.verificationId || "",
+      internshipId: record.internshipId || ""
     };
 
     if (record.status === "Revoked") {
@@ -352,7 +399,7 @@ app.get('/api/verifications/verify/:verificationId', (req, res) => {
 });
 
 // 11. POST new verification record (Admin)
-app.post('/api/verifications', (req, res) => {
+app.post('/api/verifications', async (req, res) => {
   try {
     const { 
       studentName, 
@@ -377,10 +424,72 @@ app.post('/api/verifications', (req, res) => {
       });
     }
 
+    const trimmedId = verificationId.trim();
+
+    if (supabase) {
+      // 1. Check for duplicate verification_id (case-insensitive) in Supabase
+      const { data: existing, error: searchError } = await supabase
+        .from('verification_records')
+        .select('id, verification_id')
+        .ilike('verification_id', trimmedId)
+        .limit(1);
+
+      if (searchError) {
+        console.error("Supabase duplicate check error:", searchError);
+      }
+
+      if (existing && existing.length > 0) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "This Verification ID already exists. Please use a unique ID." 
+        });
+      }
+
+      const rowToInsert = toSupabaseRow({
+        studentName, 
+        verificationId: trimmedId, 
+        documentType, 
+        internshipId, 
+        certificateId, 
+        domain, 
+        startDate, 
+        endDate, 
+        duration, 
+        status, 
+        email, 
+        notes 
+      });
+
+      const { data, error: insertError } = await supabase
+        .from('verification_records')
+        .insert([rowToInsert])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error("Supabase insert error:", insertError);
+        if (insertError.code === '23505' || (insertError.message && insertError.message.includes('unique'))) {
+          return res.status(400).json({ 
+            success: false, 
+            message: "This Verification ID already exists. Please use a unique ID." 
+          });
+        }
+        return res.status(500).json({ 
+          success: false, 
+          message: "Database error creating verification record: " + insertError.message 
+        });
+      }
+
+      return res.status(201).json({
+        success: true,
+        message: "Verification record added successfully",
+        data: fromSupabaseRow(data)
+      });
+    }
+
+    // Fallback if supabase not configured
     verifications = readData(VERIFICATIONS_FILE);
 
-    // Validate uniqueness of verification ID (case-insensitive)
-    const trimmedId = verificationId.trim();
     const isDuplicate = verifications.some(
       v => (v.verificationId || "").trim().toLowerCase() === trimmedId.toLowerCase()
     );
@@ -430,24 +539,67 @@ app.post('/api/verifications', (req, res) => {
 });
 
 // 12. PUT update verification record (Admin)
-app.put('/api/verifications/:id', (req, res) => {
+app.put('/api/verifications/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { 
-      studentName, 
-      verificationId, 
-      documentType, 
-      internshipId, 
-      certificateId, 
-      domain, 
-      startDate, 
-      endDate, 
-      duration, 
-      status, 
-      email, 
-      notes 
-    } = req.body;
+    const updatePayload = req.body;
 
+    if (supabase) {
+      // If verificationId is being updated, verify uniqueness
+      if (updatePayload.verificationId) {
+        const trimmedId = updatePayload.verificationId.trim();
+        const { data: existing, error: searchError } = await supabase
+          .from('verification_records')
+          .select('id, verification_id')
+          .ilike('verification_id', trimmedId)
+          .neq('id', id);
+
+        if (existing && existing.length > 0) {
+          return res.status(400).json({
+            success: false,
+            message: "This Verification ID already exists. Please use a unique ID."
+          });
+        }
+      }
+
+      const rowToUpdate = toSupabaseRow(updatePayload, true);
+
+      const { data, error: updateError } = await supabase
+        .from('verification_records')
+        .update(rowToUpdate)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error("Supabase update error:", updateError);
+        if (updateError.code === '23505') {
+          return res.status(400).json({
+            success: false,
+            message: "This Verification ID already exists. Please use a unique ID."
+          });
+        }
+        return res.status(500).json({
+          success: false,
+          message: "Database error updating record: " + updateError.message
+        });
+      }
+
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "Verification record not found"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Verification record updated successfully",
+        data: fromSupabaseRow(data)
+      });
+    }
+
+    // Fallback
     verifications = readData(VERIFICATIONS_FILE);
     const index = verifications.findIndex(v => v.id === id);
 
@@ -458,9 +610,8 @@ app.put('/api/verifications/:id', (req, res) => {
       });
     }
 
-    // Validate unique ID among other records
-    if (verificationId) {
-      const trimmedId = verificationId.trim();
+    if (updatePayload.verificationId) {
+      const trimmedId = updatePayload.verificationId.trim();
       const isDuplicate = verifications.some(
         v => v.id !== id && (v.verificationId || "").trim().toLowerCase() === trimmedId.toLowerCase()
       );
@@ -474,17 +625,17 @@ app.put('/api/verifications/:id', (req, res) => {
       verifications[index].verificationId = trimmedId;
     }
 
-    if (studentName !== undefined) verifications[index].studentName = studentName.trim();
-    if (documentType !== undefined) verifications[index].documentType = documentType.trim();
-    if (internshipId !== undefined) verifications[index].internshipId = (internshipId || "").trim();
-    if (certificateId !== undefined) verifications[index].certificateId = (certificateId || "").trim();
-    if (domain !== undefined) verifications[index].domain = domain.trim();
-    if (startDate !== undefined) verifications[index].startDate = startDate.trim();
-    if (endDate !== undefined) verifications[index].endDate = endDate.trim();
-    if (duration !== undefined) verifications[index].duration = duration.trim();
-    if (status !== undefined) verifications[index].status = status === "Revoked" ? "Revoked" : "Verified";
-    if (email !== undefined) verifications[index].email = (email || "").trim();
-    if (notes !== undefined) verifications[index].notes = (notes || "").trim();
+    if (updatePayload.studentName !== undefined) verifications[index].studentName = updatePayload.studentName.trim();
+    if (updatePayload.documentType !== undefined) verifications[index].documentType = updatePayload.documentType.trim();
+    if (updatePayload.internshipId !== undefined) verifications[index].internshipId = (updatePayload.internshipId || "").trim();
+    if (updatePayload.certificateId !== undefined) verifications[index].certificateId = (updatePayload.certificateId || "").trim();
+    if (updatePayload.domain !== undefined) verifications[index].domain = updatePayload.domain.trim();
+    if (updatePayload.startDate !== undefined) verifications[index].startDate = updatePayload.startDate.trim();
+    if (updatePayload.endDate !== undefined) verifications[index].endDate = updatePayload.endDate.trim();
+    if (updatePayload.duration !== undefined) verifications[index].duration = updatePayload.duration.trim();
+    if (updatePayload.status !== undefined) verifications[index].status = updatePayload.status === "Revoked" ? "Revoked" : "Verified";
+    if (updatePayload.email !== undefined) verifications[index].email = (updatePayload.email || "").trim();
+    if (updatePayload.notes !== undefined) verifications[index].notes = (updatePayload.notes || "").trim();
     verifications[index].updatedAt = new Date().toISOString();
 
     writeData(VERIFICATIONS_FILE, verifications);
@@ -505,9 +656,40 @@ app.put('/api/verifications/:id', (req, res) => {
 });
 
 // 13. PATCH revoke verification record (Admin)
-app.patch('/api/verifications/:id/revoke', (req, res) => {
+app.patch('/api/verifications/:id/revoke', async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('verification_records')
+        .update({ status: 'Revoked', updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Supabase revoke error:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Database error revoking record: " + error.message
+        });
+      }
+
+      if (!data) {
+        return res.status(404).json({
+          success: false,
+          message: "Verification record not found"
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Verification record revoked successfully",
+        data: fromSupabaseRow(data)
+      });
+    }
+
     verifications = readData(VERIFICATIONS_FILE);
     const index = verifications.findIndex(v => v.id === id);
 
@@ -538,9 +720,30 @@ app.patch('/api/verifications/:id/revoke', (req, res) => {
 });
 
 // 14. DELETE verification record (Admin)
-app.delete('/api/verifications/:id', (req, res) => {
+app.delete('/api/verifications/:id', async (req, res) => {
   try {
     const { id } = req.params;
+
+    if (supabase) {
+      const { error } = await supabase
+        .from('verification_records')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        console.error("Supabase delete error:", error);
+        return res.status(500).json({
+          success: false,
+          message: "Database error deleting record: " + error.message
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Verification record deleted successfully"
+      });
+    }
+
     verifications = readData(VERIFICATIONS_FILE);
     const index = verifications.findIndex(v => v.id === id);
 

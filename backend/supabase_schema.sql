@@ -1,0 +1,47 @@
+-- =============================================================================
+-- Supabase SQL Schema for InfozaTech Verification Records
+-- Table: verification_records
+-- =============================================================================
+
+CREATE TABLE IF NOT EXISTS public.verification_records (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    verification_id TEXT NOT NULL UNIQUE,
+    student_name TEXT NOT NULL,
+    document_type TEXT NOT NULL DEFAULT 'Internship Certificate',
+    domain TEXT NOT NULL,
+    start_date TEXT NOT NULL,
+    end_date TEXT NOT NULL,
+    duration TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'Verified',
+    email TEXT DEFAULT '',
+    notes TEXT DEFAULT '',
+    internship_id TEXT DEFAULT '',
+    certificate_id TEXT DEFAULT '',
+    issued_by TEXT DEFAULT 'InfozaTech',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Case-insensitive unique index on verification_id
+CREATE UNIQUE INDEX IF NOT EXISTS idx_verification_records_verification_id_lower 
+ON public.verification_records (LOWER(verification_id));
+
+-- Index for fast lookup on verification_id
+CREATE INDEX IF NOT EXISTS idx_verification_records_verification_id 
+ON public.verification_records (verification_id);
+
+-- Enable Row Level Security (RLS)
+ALTER TABLE public.verification_records ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Allow public read access to verify certificates
+CREATE POLICY "Public Read Access for Verification" 
+ON public.verification_records 
+FOR SELECT 
+USING (true);
+
+-- Policy: Allow service role full access
+CREATE POLICY "Service Role Full Access" 
+ON public.verification_records 
+FOR ALL 
+USING (true)
+WITH CHECK (true);
