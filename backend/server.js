@@ -973,12 +973,18 @@ if (fs.existsSync(frontendDistPath)) {
   });
 }
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`\n========================================`);
-  console.log(`🚀 Server started on port ${PORT}`);
-  console.log(`👉 Test API at: http://localhost:${PORT}/api/test`);
-  console.log(`👉 Contacts API: http://localhost:${PORT}/api/contacts`);
-  console.log(`👉 Leads API: http://localhost:${PORT}/api/leads`);
-  console.log(`========================================\n`);
-});
+// Export Express app for Vercel Serverless Function and testing
+module.exports = app;
+
+// Start server if run directly (Local development)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n========================================`);
+    console.log(`🚀 Server started on port ${PORT}`);
+    console.log(`👉 Test API at: http://localhost:${PORT}/api/test`);
+    console.log(`👉 Contacts API: http://localhost:${PORT}/api/contacts`);
+    console.log(`👉 Leads API: http://localhost:${PORT}/api/leads`);
+    console.log(`👉 Verifications API: http://localhost:${PORT}/api/verifications`);
+    console.log(`========================================\n`);
+  });
+}

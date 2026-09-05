@@ -1,11 +1,21 @@
 {
-  "name": "infozatech-root",
+  "name": "infozatech",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node build.js",
+    "build": "cd frontend && npm install && npm run build",
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
     "frontend-install": "cd frontend && npm install",
     "backend-install": "cd backend && npm install",
-    "install-all": "npm run frontend-install && npm run backend-install"
+    "install-all": "npm install && npm run frontend-install && npm run backend-install"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.1",
+    "nodemailer": "^7.0.12"
   }
 }
