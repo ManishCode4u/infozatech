@@ -1,9 +1,8 @@
 import API_URL from "../config";
 
-const ADMIN_CACHE_KEY = "infozatech_admin_verifications_cache_v1";
-
 /**
  * Fetch all verification records (For Admin Panel)
+ * Single Source of Truth: Supabase PostgreSQL via Backend API
  */
 export const fetchVerifications = async () => {
   try {
@@ -12,23 +11,11 @@ export const fetchVerifications = async () => {
     });
     const data = await res.json();
     if (data.success && Array.isArray(data.data)) {
-      try {
-        localStorage.setItem(ADMIN_CACHE_KEY, JSON.stringify(data.data));
-      } catch (e) {
-        console.warn("Could not cache to localStorage", e);
-      }
       return { success: true, data: data.data };
     }
     return { success: false, message: data.message || "Failed to load verification records.", data: [] };
   } catch (err) {
     console.error("Error fetching verifications:", err);
-    // Fallback only for Admin view if available
-    try {
-      const cached = localStorage.getItem(ADMIN_CACHE_KEY);
-      if (cached) {
-        return { success: true, data: JSON.parse(cached), isOffline: true };
-      }
-    } catch (e) {}
     return { success: false, message: "Cannot connect to server. Please ensure backend is running.", data: [] };
   }
 };

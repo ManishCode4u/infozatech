@@ -1,29 +1,32 @@
 require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
 
 let supabase = null;
 
-if (supabaseUrl && supabaseKey) {
+if (supabaseUrl && supabaseServiceKey) {
   try {
-    supabase = createClient(supabaseUrl, supabaseKey, {
+    supabase = createClient(supabaseUrl, supabaseServiceKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false
       }
     });
-    console.log('✅ Supabase PostgreSQL client connected successfully.');
+    console.log('✅ Supabase client connected successfully to PostgreSQL database.');
   } catch (err) {
     console.error('❌ Failed to initialize Supabase client:', err.message);
   }
 } else {
-  console.warn('⚠️ Supabase credentials missing. Please set SUPABASE_URL and SUPABASE_KEY in backend/.env');
+  console.warn('⚠️ Supabase credentials missing. Please define SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in environment variables.');
 }
 
 /**
- * Maps database row (snake_case or camelCase) to frontend standard format
+ * Maps database row (snake_case from PostgreSQL) to frontend camelCase format
+ * Exact PostgreSQL Columns:
+ * id (bigint), verification_id, student_name, document_type, internship_id, certificate_id,
+ * domain, start_date, end_date, duration, status, email, notes, created_at, updated_at
  */
 const fromSupabaseRow = (row) => {
   if (!row) return null;
@@ -41,14 +44,14 @@ const fromSupabaseRow = (row) => {
     status: row.status || 'Verified',
     email: row.email || '',
     notes: row.notes || '',
-    issuedBy: row.issued_by || row.issuedBy || 'InfozaTech',
+    issuedBy: 'InfozaTech',
     createdAt: row.created_at || row.createdAt || new Date().toISOString(),
     updatedAt: row.updated_at || row.updatedAt || new Date().toISOString()
   };
 };
 
 /**
- * Maps incoming request data to Supabase database columns (snake_case)
+ * Maps incoming request data to exact Supabase PostgreSQL columns (snake_case)
  */
 const toSupabaseRow = (data, isUpdate = false) => {
   const row = {};
@@ -88,9 +91,6 @@ const toSupabaseRow = (data, isUpdate = false) => {
   }
   if (data.certificateId !== undefined || data.certificate_id !== undefined) {
     row.certificate_id = (data.certificateId || data.certificate_id || '').trim();
-  }
-  if (data.issuedBy !== undefined || data.issued_by !== undefined) {
-    row.issued_by = (data.issuedBy || data.issued_by || 'InfozaTech').trim();
   }
 
   row.updated_at = new Date().toISOString();
