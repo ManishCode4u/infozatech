@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PhoneCall, X, Instagram } from 'lucide-react';
+import { MessageCircle, X, Instagram } from 'lucide-react';
 
 const FloatingChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,7 +61,19 @@ const FloatingChatWidget = () => {
         {isOpen ? (
           <X size={28} className="-rotate-90 transition-transform duration-300" />
         ) : (
-          <PhoneCall size={26} strokeWidth={2.2} />
+          <svg 
+            viewBox="0 0 24 24" 
+            className="w-7 h-7 drop-shadow-sm" 
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path 
+              fillRule="evenodd" 
+              clipRule="evenodd" 
+              d="M4 3C2.34315 3 1 4.34315 1 6V15C1 16.6569 2.34315 18 4 18H5.5V21.5C5.5 22.12 6.25 22.44 6.7 22L10.7 18H20C21.6569 18 23 16.6569 23 15V6C23 4.34315 21.6569 3 20 3H4ZM6.75 10.5C6.75 9.67157 7.42157 9 8.25 9C9.07843 9 9.75 9.67157 9.75 10.5C9.75 11.3284 9.07843 12 8.25 12C7.42157 12 6.75 11.3284 6.75 10.5ZM12 9C11.1716 9 10.5 9.67157 10.5 10.5C10.5 11.3284 11.1716 12 12 12C12.8284 12 13.5 11.3284 13.5 10.5C13.5 9.67157 12.8284 9 12 9ZM14.25 10.5C14.25 9.67157 14.9216 9 15.75 9C16.5784 9 17.25 9.67157 17.25 10.5C17.25 11.3284 16.5784 12 15.75 12C14.9216 12 14.25 11.3284 14.25 10.5Z" 
+              fill="white"
+            />
+          </svg>
         )}
       </button>
     </div>

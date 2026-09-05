@@ -150,20 +150,19 @@ const WhyFounders = () => {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-20 md:mb-24">
           <ScrollReveal direction="up" delay={0.1}>
-            <span className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[3px] text-[#2563EB] bg-[#2563EB]/5 border border-[#2563EB]/15 px-4 py-1.5 rounded-full shadow-sm">
-              ● Why InfozaTech
+            <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-[#2563EB] bg-white px-6 py-1.5 rounded-full mb-6 border border-slate-200 shadow-sm">
+              Why InfozaTech
             </span>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.2}>
-            <h2 className="mt-6 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0F0F0F] leading-tight">
-              The Development Partner <br className="hidden sm:inline" />
-              Built For <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Modern Startups</span>
+            <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium text-[#1E293B] mb-4 tracking-tight">
+              The Development Partner Built For <span className="text-[#2563EB]">Modern Startups</span>
             </h2>
           </ScrollReveal>
 
           <ScrollReveal direction="up" delay={0.3}>
-            <p className="mt-6 text-base md:text-lg text-slate-500 leading-relaxed font-medium">
+            <p className="text-base md:text-lg text-slate-500 leading-relaxed font-normal max-w-2xl mx-auto">
               We don't just build websites and apps. We help founders launch, scale and grow digital products faster.
             </p>
           </ScrollReveal>

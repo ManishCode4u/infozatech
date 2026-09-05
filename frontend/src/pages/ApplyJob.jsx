@@ -327,10 +327,10 @@ export default function ApplyJob() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-[#DFFF00] text-slate-950 hover:bg-[#bce600] py-4 px-6 rounded-2xl text-[14px] font-bold transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98]"
+                className="w-full bg-blue-600 text-white hover:bg-blue-700 py-4 px-6 rounded-2xl text-[14px] font-bold transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-blue-500/25 hover:shadow-lg hover:shadow-blue-500/35 hover:scale-[1.01] active:scale-[0.98]"
               >
                 {loading ? "Submitting Application..." : "Submit Application"}
-                {!loading && <Send size={16} className="transition-transform group-hover:translate-x-1 text-slate-950" />}
+                {!loading && <Send size={16} className="transition-transform group-hover:translate-x-1 text-white" />}
               </button>
             </div>
           </form>

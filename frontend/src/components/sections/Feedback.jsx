@@ -55,14 +55,13 @@ export default function TestimonialSection() {
       
       <div className="relative z-10 max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-16 md:gap-8">
         <div className="text-center md:text-left w-full md:w-1/2">
-          <span className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-[3px] text-[#2563EB] bg-[#2563EB]/5 border border-[#2563EB]/15 px-4 py-1.5 rounded-full shadow-sm">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB] bg-[#2563EB]/5 px-6 py-2 rounded-full mb-6 border border-[#2563EB]/15">
             ● Client Feedback
           </span>
-          <h2 className="mt-6 text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0F0F0F] leading-tight">
-            Hear From The <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Founders</span> We've Worked With
+          <h2 className="text-4xl sm:text-5xl font-[700] tracking-tight text-[#0F0F0F]">
+            Hear From The <span className="text-[#2563EB]">Founders</span> We've Worked With
           </h2>
-          <p className="mt-4 text-base md:text-lg text-slate-500 leading-relaxed font-medium mx-auto md:mx-0 max-w-md">
+          <p className="mt-4 text-base sm:text-lg text-slate-500 leading-relaxed font-normal mx-auto md:mx-0 max-w-md">
             Real feedback from innovative businesses leveraging our tech stack to scale their operations and reach new heights.
           </p>
         </div>

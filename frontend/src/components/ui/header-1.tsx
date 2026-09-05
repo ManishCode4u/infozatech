@@ -70,7 +70,7 @@ export function Header() {
 					</div>
 				</div>
 				<div className="hidden md:block">
-					<Button className="bg-[#DFFF00] text-slate-950 hover:bg-[#bce600] rounded-xl font-bold transition-all shadow-sm active:scale-[0.98]" asChild>
+					<Button className="bg-[#2563EB] text-white hover:bg-[#1d4ed8] rounded-xl font-bold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]" asChild>
 						<a href="tel:+919155596712">Book a Call</a>
 					</Button>
 				</div>
@@ -108,7 +108,7 @@ export function Header() {
 							Contact
 						</Link>
 					</Button>
-					<Button className="w-full bg-[#DFFF00] text-slate-950 hover:bg-[#bce600] rounded-xl font-bold transition-all shadow-sm active:scale-[0.98]" asChild>
+					<Button className="w-full bg-[#2563EB] text-white hover:bg-[#1d4ed8] rounded-xl font-bold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98]" asChild>
 						<a href="tel:+919155596712" onClick={() => setOpen(false)}>
 							Book a Call
 						</a>

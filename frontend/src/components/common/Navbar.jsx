@@ -32,7 +32,7 @@ const Navbar = () => {
   const navLinks = [
     { title: "About", path: "/about" },
     { title: "Services", path: "/services" },
-    { title: "Projects", path: "/projects" },
+    { title: "Our Work", path: "/projects" },
     { title: "How It Works", path: "/how-it-works" },
     { title: "Careers", path: "/careers" },
     { title: "Contact", path: "/contact", isContact: true }
@@ -84,7 +84,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <a
               href="tel:+919155596712"
-              className="bg-[#DFFF00] text-slate-950 hover:bg-[#bce600] px-6 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-sm active:scale-[0.98] flex items-center justify-center gap-1.5"
+              className="bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-6 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] flex items-center justify-center gap-1.5"
             >
               Book a Call <ArrowRight className="w-3.5 h-3.5" />
             </a>
@@ -193,7 +193,7 @@ const Navbar = () => {
           <a
             href="tel:+919155596712"
             onClick={() => setOpen(false)}
-            className="bg-[#DFFF00] text-slate-950 hover:bg-[#bce600] px-5 py-3 rounded-full text-sm font-bold w-full text-center shadow-md transition-all duration-200"
+            className="bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-5 py-3 rounded-full text-sm font-bold w-full text-center shadow-md shadow-blue-500/20 transition-all duration-200"
           >
             Book a Call
           </a>

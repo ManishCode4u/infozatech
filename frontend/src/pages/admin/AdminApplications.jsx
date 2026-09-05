@@ -2,34 +2,46 @@
 import React, { useState, useEffect } from "react";
 import API_URL from "../../config";
 import { Search, Eye, X, Trash2, RefreshCw, Briefcase, Mail, Phone, MapPin, Calendar, CheckSquare, Users } from "lucide-react";
+import { getStoredApplications, deleteStoredApplication } from "../../services/applicationsData";
 
 export default function AdminApplications() {
   const [selectedApp, setSelectedApp] = useState(null);
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoleFilter, setSelectedRoleFilter] = useState("All");
 
   const fetchApplications = async () => {
+    setLoading(true);
+    setError(null);
+
+    // 1. First load all local applications instantly
+    const localApps = getStoredApplications();
+
     try {
-      setLoading(true);
-      setError(null);
-      const res = await fetch(`${API_URL}/api/applications`);
+      const res = await fetch(`${API_URL}/api/applications`, { signal: AbortSignal.timeout(3000) });
       const data = await res.json();
       
-      console.log("API Response:", data);
-      
-      if (data.success) {
-        // Sort descending by date to show newest first
-        const sorted = data.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      if (data.success && Array.isArray(data.data)) {
+        // Merge backend apps and local apps without duplicates by id or email+createdAt
+        const combined = [...localApps];
+        data.data.forEach((backendApp) => {
+          const exists = combined.some(
+            (a) => a.id === backendApp.id || (a.email === backendApp.email && Math.abs(new Date(a.createdAt) - new Date(backendApp.createdAt)) < 5000)
+          );
+          if (!exists) {
+            combined.push(backendApp);
+          }
+        });
+        const sorted = combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setApplications(sorted);
       } else {
-        setError(data.message || "Failed to load job applications.");
+        setApplications(localApps);
       }
     } catch (err) {
-      console.error("Fetch Error:", err);
-      setError("Cannot reach server. Please ensure backend is running.");
+      // Backend unavailable or slow: fallback seamlessly to local applications
+      setApplications(localApps);
     } finally {
       setLoading(false);
     }
@@ -42,23 +54,20 @@ export default function AdminApplications() {
   const deleteApplication = async (id) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
 
-    try {
-      const res = await fetch(`${API_URL}/api/applications/${id}`, {
-        method: "DELETE"
-      });
-      const data = await res.json();
+    // 1. Delete locally
+    const updated = deleteStoredApplication(id);
+    setApplications(prev => prev.filter(app => app.id !== id));
+    if (selectedApp && selectedApp.id === id) {
+      setSelectedApp(null);
+    }
 
-      if (data.success) {
-        setApplications(prev => prev.filter(app => app.id !== id));
-        if (selectedApp && selectedApp.id === id) {
-          setSelectedApp(null);
-        }
-      } else {
-        alert(data.message || "Failed to delete application.");
-      }
+    // 2. Also attempt backend delete
+    try {
+      fetch(`${API_URL}/api/applications/${id}`, {
+        method: "DELETE"
+      }).catch(err => console.log('Backend delete notice:', err));
     } catch (err) {
-      console.error("Delete Error:", err);
-      alert("Failed to delete application. Server connection error.");
+      console.log('Delete catch:', err);
     }
   };
 

@@ -102,13 +102,28 @@ const Footer = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to="/services" className="block hover:text-[#2563EB] transition">
+                    Services
+                  </Link>
+                </li>
+                <li>
                   <Link to="/projects" className="block hover:text-[#2563EB] transition">
                     Projects
                   </Link>
                 </li>
                 <li>
-                  <Link to="/services" className="block hover:text-[#2563EB] transition">
-                    Services
+                  <Link to="/internship" className="block hover:text-[#2563EB] transition">
+                    Virtual Internship
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/careers" className="block hover:text-[#2563EB] transition">
+                    Careers & Jobs
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/verify" className="block hover:text-[#2563EB] transition">
+                    Verify Document
                   </Link>
                 </li>
                 <li>

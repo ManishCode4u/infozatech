@@ -57,24 +57,22 @@ const ClientsTestimonialsPage = () => {
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'dark bg-gray-900' : 'bg-gray-50'} font-sans`}>
-       
-
-
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-900 pt-12 pb-16">
-        <div className="absolute inset-0 opacity-50" 
-             style={{
-               backgroundImage: `radial-gradient(rgba(13, 64, 165, 0.05) 1px, transparent 1px)`,
-               backgroundSize: '20px 20px'
-             }}>
-        </div>
+      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-900 pt-28 pb-16">
+        <div 
+          className="absolute inset-0 opacity-50" 
+          style={{
+            backgroundImage: `radial-gradient(rgba(13, 64, 165, 0.05) 1px, transparent 1px)`,
+            backgroundSize: '20px 20px'
+          }}
+        />
         
-        <div className="relative z-10 text-center px-4">
-          <span className="inline-block py-1 px-3 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold uppercase tracking-wider mt-12 mb-4">
+        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+          <span className="inline-block py-1 px-3 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-semibold uppercase tracking-wider mb-4">
             Our Success Stories
           </span>
-          <h1 className="text-3xl md:text-4xl font-[700] leading-tight mb-4 text-[#0f172a] dark:text-white">
-            Trusted by <br />Our Clients
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-[700] leading-tight mb-4 text-[#0f172a] dark:text-white whitespace-nowrap">
+            Trusted by Our Clients
           </h1>
           <p className="text-[#64748b] dark:text-gray-400 text-sm md:text-base leading-relaxed max-w-md mx-auto">
             Delivering innovative tech solutions for industry leaders and visionary startups worldwide.
@@ -83,7 +81,7 @@ const ClientsTestimonialsPage = () => {
       </section>
 
       {/* Stats Bar */}
-      <section className="px-4 -mt-8 relative z-20">
+      <section className="px-4 -mt-8 relative z-20 max-w-4xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg shadow-blue-500/5 p-6 flex justify-around border border-gray-100 dark:border-gray-700">
           {stats.map((stat, index) => (
             <div key={stat.label} className="text-center">
@@ -152,37 +150,35 @@ const ClientsTestimonialsPage = () => {
 
       {/* Client Logos */}
       <section className="py-20 bg-gray-50 dark:bg-gray-900/40">
-  <div className="px-4 max-w-6xl mx-auto">
+        <div className="px-4 max-w-6xl mx-auto">
+          <p className="text-sm text-center uppercase tracking-widest text-black-500 dark:text-black-400 font-semibold mb-14">
+            Trusted by global partners
+          </p>
 
-    <p className="text-sm text-center uppercase tracking-widest text-black-500 dark:text-black-400 font-semibold mb-14">
-      Trusted by global partners
-    </p>
-
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-14 items-center">
-      {clientLogos.map((logo, index) => (
-        <div
-          key={index}
-          className="flex justify-center items-center transition-all duration-300 hover:scale-110"
-        >
-          <img
-            src={logo}
-            alt={`Client Logo ${index + 1}`}
-            className="h-12 md:h-14 object-contain opacity-90 hover:opacity-100 transition-all duration-300"
-            onError={(e) => {
-              e.target.style.display = "none";
-              e.target.parentNode.innerHTML = `
-                <div class="h-12 md:h-14 w-32 flex items-center justify-center text-gray-400 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-semibold">
-                  CLIENT ${index + 1}
-                </div>
-              `;
-            }}
-          />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-14 items-center">
+            {clientLogos.map((logo, index) => (
+              <div
+                key={index}
+                className="flex justify-center items-center transition-all duration-300 hover:scale-110"
+              >
+                <img
+                  src={logo}
+                  alt={`Client Logo ${index + 1}`}
+                  className="h-12 md:h-14 object-contain opacity-90 hover:opacity-100 transition-all duration-300"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.parentNode.innerHTML = `
+                      <div class="h-12 md:h-14 w-32 flex items-center justify-center text-gray-400 border border-gray-300 dark:border-gray-700 rounded-md text-sm font-semibold">
+                        CLIENT ${index + 1}
+                      </div>
+                    `;
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
-    </div>
-
-  </div>
-</section>
+      </section>
 
       {/* CTA Section */}
       <section className="py-20 px-4 bg-white dark:bg-gray-900 text-center">

@@ -91,7 +91,7 @@ const AppShowcase = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <ScrollReveal direction="up" delay={0.1}>
           <div className="text-center mb-16 px-4">
-            <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-slate-500 bg-white px-6 py-1.5 rounded-full mb-6 border border-slate-200 shadow-sm">
+            <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-[#2563EB] bg-white px-6 py-1.5 rounded-full mb-6 border border-slate-200 shadow-sm">
               Social Presence
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium text-[#1E293B] mb-4 tracking-tight">

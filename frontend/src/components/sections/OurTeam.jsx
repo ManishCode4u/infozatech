@@ -48,9 +48,13 @@ const OurTeam = () => {
     <section className="pt-6 md:pt-8 pb-20 md:pb-24 bg-[#FFFFFF]">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
-        <div className="mb-10 text-center">
-          <span className="inline-block py-1 px-3 rounded-full text-[#2563EB] bg-[#2563EB]/10 border border-[#2563EB]/20 mb-3 text-xs font-semibold tracking-wider uppercase">Our Team</span>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[#0F0F0F]">Team Behind InfozaTech</h2>
+        <div className="text-center max-w-3xl mx-auto mb-14">
+          <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB] bg-[#2563EB]/5 px-6 py-2 rounded-full mb-6 border border-[#2563EB]/15">
+            ● Our Team
+          </span>
+          <h2 className="text-4xl sm:text-5xl font-[700] tracking-tight text-[#0F0F0F]">
+            Team Behind <span className="text-[#2563EB]">InfozaTech</span>
+          </h2>
         </div>
         
         {/* Slider Container with negative margin on mobile to allow edge-to-edge swipe but start padded */}

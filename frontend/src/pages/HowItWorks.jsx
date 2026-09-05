@@ -5,409 +5,303 @@ import { motion, AnimatePresence } from "framer-motion";
 const steps = [
   {
     step: "1",
-    title: "Share Your Requirement",
     subtitle: "Enter Your Idea",
-    desc: "Tell us what you want to build — app, website, project, or training.",
-    videoUrl: "", 
+    desc: "Tell InfozaTech your startup idea. Get instant clarity on tech stack, roadmap, and what to build next.",
   },
   {
     step: "2",
-    title: "Get Solution & Guidance",
-    subtitle: "Instant Match",
-    desc: "We analyze your requirement and suggest the best solution & roadmap.",
-    videoUrl: "",
+    subtitle: "Get Instant Matches",
+    desc: "InfozaTech finds the right dedicated developers, solutions, and architecture based on your project requirements.",
   },
   {
     step: "3",
-    title: "Build, Deliver & Support",
-    subtitle: "Best Outcome",
-    desc: "We build, guide, and support you until your goal is achieved.",
-    videoUrl: "",
+    subtitle: "See Your Best Matches",
+    desc: "View your customized development team and project blueprint ready to launch and scale rapidly.",
   },
 ];
 
-// Custom Typing Animation Component for the first card
+// --- STEP 1: ENTER YOUR IDEA ANIMATION ---
 const CardAnimation = () => {
   const [inputText, setInputText] = useState("");
-  const [showResponse, setShowResponse] = useState(false);
+  const [showAnalysis, setShowAnalysis] = useState(false);
   const [key, setKey] = useState(0); 
-  const fullInput = "I need a business website for my startup";
+  const fullInput = "I need a SaaS web app for my startup";
 
   useEffect(() => {
+    let timeouts = [];
     let index = 0;
+    setInputText("");
+    setShowAnalysis(false);
+
     const interval = setInterval(() => {
       if (index <= fullInput.length) {
         setInputText(fullInput.substring(0, index));
         index++;
       } else {
         clearInterval(interval);
-        setTimeout(() => setShowResponse(true), 600);
-        setTimeout(() => {
-          setShowResponse(false);
-          setInputText("");
+        timeouts.push(setTimeout(() => setShowAnalysis(true), 500));
+        timeouts.push(setTimeout(() => {
           setKey(prev => prev + 1);
-        }, 4000);
+        }, 6000));
       }
-    }, 60);
-    return () => clearInterval(interval);
+    }, 55);
+
+    return () => {
+      clearInterval(interval);
+      timeouts.forEach(clearTimeout);
+    };
   }, [key]);
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center p-6 gap-4 relative">
-      <div className="absolute top-4 right-4 text-[10px] font-bold text-white/40 uppercase tracking-widest">
-        InfozaTech
-      </div>
-
-      <div className="relative w-full max-w-[280px] bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-3 flex items-center gap-3 transform -translate-y-2">
-        <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center text-white/60">
-          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+    <div className="w-full h-full flex flex-col items-center justify-center p-5 relative select-none">
+      {/* Main Glass Input Pill */}
+      <div className="w-full max-w-[280px] sm:max-w-[300px] h-12 bg-white/15 backdrop-blur-md rounded-full border border-white/25 pl-4 pr-1.5 flex items-center justify-between gap-2 shadow-lg shadow-blue-950/15">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="text-white flex-shrink-0">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.516 0c.85.493 1.508 1.333 1.508 2.316V18" />
+            </svg>
+          </div>
+          <span className="text-[12px] sm:text-[13px] text-white font-medium whitespace-nowrap overflow-hidden text-ellipsis">
+            {inputText}
+            <span className="inline-block w-[2px] h-3 bg-white ml-0.5 animate-pulse align-middle" />
+          </span>
+        </div>
+        <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#2563EB] shadow-md flex-shrink-0 cursor-pointer hover:scale-105 transition-transform">
+          <svg className="w-3.5 h-3.5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
           </svg>
         </div>
-        <div className="flex-grow text-[12px] md:text-[13px] text-white font-medium min-h-[1.2rem]">
-          {inputText}
-          <span className="inline-block w-[2px] h-3 bg-white ml-0.5 animate-pulse" />
-        </div>
       </div>
 
-      <div className={`w-auto max-w-[240px] bg-white/15 backdrop-blur-xl rounded-xl border border-white/20 px-4 py-2 flex items-center gap-2 transform transition-all duration-700 ${showResponse ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-        <div className="text-white/80">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z" />
-          </svg>
-        </div>
-        <div className="text-[11px] md:text-[12px] text-white font-medium whitespace-nowrap">
-          Got it! Let’s build your website
-        </div>
+      {/* Sub-Pill: AI Analyzing */}
+      <div className={`mt-4 px-3.5 py-1.5 bg-white/15 backdrop-blur-md rounded-full border border-white/20 flex items-center gap-2 text-white/95 text-[11px] font-medium transition-all duration-500 shadow-sm ${showAnalysis ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-2 scale-95'}`}>
+        <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L14.4 7.2L20 9.6L14.4 12L12 17.2L9.6 12L4 9.6L9.6 7.2L12 2Z" />
+        </svg>
+        <span>Analyzing requirements & roadmap...</span>
       </div>
     </div>
   );
 };
 
-// Simple typewriter component for Framer Motion
-const TypewriterText = ({ text, delay = 0 }) => {
-  return (
-    <span className="inline-block">
-      {text.split("").map((char, index) => (
-        <motion.span
-          key={`${char}-${index}`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.05, delay: delay + index * 0.04 }}
-        >
-          {char}
-        </motion.span>
-      ))}
-    </span>
-  );
-};
-
-// --- COMPONENT FOR STEP 2: DESIGN ---
+// --- STEP 2: CHAT & MATCHING ANIMATION ---
 const DesignAnimation = () => {
-  const [stage, setStage] = useState(0); 
+  const [messages, setMessages] = useState([]);
+  const [showMatch, setShowMatch] = useState(false);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
-    const cycle = async () => {
-      setStage(1);
-      await new Promise(r => setTimeout(r, 3000));
-      setStage(2);
-      await new Promise(r => setTimeout(r, 3500));
-      cycle();
-    };
-    cycle();
-    return () => {}; 
-  }, []);
+    let timeouts = [];
+    setMessages([]);
+    setShowMatch(false);
+
+    timeouts.push(setTimeout(() => setMessages([1]), 350));
+    timeouts.push(setTimeout(() => setMessages([1, 2]), 1200));
+    timeouts.push(setTimeout(() => setMessages([1, 2, 3]), 2050));
+    timeouts.push(setTimeout(() => setMessages([1, 2, 3, 4]), 2900));
+    timeouts.push(setTimeout(() => setShowMatch(true), 3700));
+
+    timeouts.push(setTimeout(() => {
+      setKey(k => k + 1);
+    }, 7800));
+
+    return () => timeouts.forEach(clearTimeout);
+  }, [key]);
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center relative p-6">
-      <div className="absolute top-4 right-4 text-[10px] font-bold text-white/40 uppercase tracking-widest z-20">
-        InfozaTech
-      </div>
-
-      <div className="w-full max-w-[280px] bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 p-3.5 shadow-2xl relative">
-        <div className="flex items-center justify-between mb-3 px-1">
-          <div className="text-[10px] font-bold text-white/80 uppercase tracking-wide">
-            System Match
-          </div>
-          <div className="flex gap-1.5">
-            <div className={`h-1.5 w-1.5 rounded-full ${stage === 1 ? 'bg-white/20 animate-pulse' : 'bg-green-400 shadow-[0_0_5px_#4ade80]'}`} />
-            <div className={`h-1.5 w-1.5 rounded-full ${stage === 1 ? 'bg-white/20 animate-pulse delay-75' : 'bg-green-400 shadow-[0_0_5px_#4ade80]'}`} />
-            <div className={`h-1.5 w-1.5 rounded-full ${stage === 1 ? 'bg-white/20 animate-pulse delay-150' : 'bg-green-400 shadow-[0_0_5px_#4ade80]'}`} />
-          </div>
-        </div>
-
-        <div className="w-full h-16 rounded-xl mb-3 flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-400/30 to-indigo-500/30 shadow-inner border border-blue-300/30">
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={stage}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="flex flex-col items-center"
+    <div className="w-full h-full flex flex-col justify-between relative p-4 sm:p-5 overflow-hidden select-none">
+      {/* Chat Messages Stream Area */}
+      <div className="flex-1 w-full flex flex-col justify-start gap-2 pt-1 pb-1">
+        <AnimatePresence>
+          {messages.includes(1) && (
+            <motion.div
+              key="msg-1"
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-2 w-full justify-start"
             >
-              <div className="text-[12px] md:text-[13px] text-white font-medium z-10 min-h-[1.2rem]">
-                {stage === 1 ? <TypewriterText key="analyzing" text="Analyzing Request..." /> : <TypewriterText key="match" text="Perfect Match Found!" />}
+              <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 text-white shadow-sm border border-white/20">
+                <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.4 7.2L20 9.6L14.4 12L12 17.2L9.6 12L4 9.6L9.6 7.2L12 2Z" />
+                </svg>
               </div>
-              <div className="text-[9px] text-white/60 mt-1 z-10 min-h-[0.9rem]">
-                {stage === 1 ? <TypewriterText key="finding" text="Finding the best roadmap" delay={0.4} /> : <TypewriterText key="expert" text="Expert team & solution ready" delay={0.4} />}
+              <div className="bg-white/20 backdrop-blur-md rounded-2xl px-3 py-1.5 flex flex-col gap-1 border border-white/25 shadow-sm min-w-[100px]">
+                <div className="h-1.5 w-16 bg-white/85 rounded-full" />
+                <div className="h-1.5 w-10 bg-white/60 rounded-full" />
               </div>
             </motion.div>
-          </AnimatePresence>
-
-          {stage === 2 && (
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent"
-              animate={{ x: [-280, 280] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            />
           )}
-        </div>
 
-        <div className="flex justify-between items-center px-1">
-          <div className="flex flex-col gap-1">
-            <div className="h-1.5 w-16 rounded-full bg-white/20" />
-            <div className="h-1.5 w-10 rounded-full bg-white/10" />
-          </div>
-          <div className="relative">
-            <div 
-              className="h-6 px-3 rounded-lg flex items-center justify-center bg-white text-[10px] font-bold text-blue-600 shadow-lg transition-all duration-300 relative z-10"
+          {messages.includes(2) && (
+            <motion.div
+              key="msg-2"
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-2 w-full justify-end"
             >
-              <AnimatePresence mode="wait">
-                <motion.span
-                  key={stage}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {stage === 1 ? "Matching..." : "View Plan"}
-                </motion.span>
-              </AnimatePresence>
-            </div>
-            {/* Button click ripple */}
-            {stage === 2 && (
-              <motion.div
-                className="absolute inset-0 rounded-lg border-2 border-white bg-white/40"
-                initial={{ opacity: 0, scale: 1 }}
-                animate={{ opacity: [0, 1, 0], scale: [1, 1.4, 1.6] }}
-                transition={{ duration: 0.6, delay: 1.8, ease: "easeOut" }}
-              />
-            )}
-          </div>
-        </div>
+              <div className="bg-white/25 backdrop-blur-md rounded-2xl px-3 py-2 flex items-center border border-white/30 shadow-sm min-w-[90px]">
+                <div className="h-1.5 w-14 bg-white/90 rounded-full" />
+              </div>
+            </motion.div>
+          )}
 
-        {/* Animated Mouse Cursor */}
-        {stage === 2 && (
-          <motion.div
-            className="absolute z-50 pointer-events-none drop-shadow-lg"
-            style={{ bottom: "1rem", right: "2.5rem" }}
-            initial={{ x: 60, y: 80, opacity: 0 }}
-            animate={{ 
-              x: [60, -5, -5, -5], 
-              y: [80, 5, 5, 5], 
-              opacity: [0, 1, 1, 0],
-              scale: [1, 1, 0.8, 1]
-            }}
-            transition={{ duration: 2.2, delay: 1.2, ease: "easeInOut", times: [0, 0.27, 0.36, 1] }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M5.5 3L18.5 10L12 12.5L14 19L11 20.5L9 14L4 16.5V3Z" fill="#1e293b" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
-            </svg>
-          </motion.div>
-        )}
+          {messages.includes(3) && (
+            <motion.div
+              key="msg-3"
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-2 w-full justify-start"
+            >
+              <div className="w-5 h-5 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center flex-shrink-0 text-white shadow-sm border border-white/20">
+                <svg className="w-3 h-3 text-white" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L14.4 7.2L20 9.6L14.4 12L12 17.2L9.6 12L4 9.6L9.6 7.2L12 2Z" />
+                </svg>
+              </div>
+              <div className="bg-white/20 backdrop-blur-md rounded-2xl px-3 py-1.5 flex flex-col gap-1 border border-white/25 shadow-sm min-w-[100px]">
+                <div className="h-1.5 w-18 bg-white/85 rounded-full" />
+                <div className="h-1.5 w-12 bg-white/60 rounded-full" />
+              </div>
+            </motion.div>
+          )}
+
+          {messages.includes(4) && (
+            <motion.div
+              key="msg-4"
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              className="flex items-center gap-2 w-full justify-end"
+            >
+              <div className="bg-white/25 backdrop-blur-md rounded-2xl px-3 py-2 flex items-center border border-white/30 shadow-sm min-w-[95px]">
+                <div className="h-1.5 w-16 bg-white/90 rounded-full" />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      <motion.div 
-        className="absolute bottom-3 text-[10px] text-white/50 font-medium tracking-wide"
-        animate={{ opacity: stage === 2 ? 1 : 0.4 }}
-      >
-        Designing your website layout and features...
-      </motion.div>
+      {/* Bottom Matching Button */}
+      <div className="w-full flex justify-center pt-1 pb-0.5 relative z-20">
+        <AnimatePresence>
+          {showMatch ? (
+            <motion.div
+              key="match-btn"
+              initial={{ opacity: 0, y: 10, scale: 0.94 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 6, scale: 0.96 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full max-w-[220px] py-2.5 px-4 bg-white rounded-full shadow-lg shadow-blue-950/20 flex items-center justify-center gap-2 text-[#2563EB] font-bold text-xs tracking-tight cursor-pointer hover:scale-105 transition-transform"
+            >
+              <span>View Your Matches</span>
+              <svg className="w-3.5 h-3.5 text-[#2563EB]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+              </svg>
+            </motion.div>
+          ) : (
+            <div className="h-9" />
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
 
-// --- COMPONENT FOR STEP 3: DEPLOY & LAUNCH ---
+// --- STEP 3: MATCHING SCORES ANIMATION (Matches reference image) ---
 const DeliveryAnimation = () => {
-  const [stage, setStage] = useState(0); // 0: Preview, 1: Deploying, 2: Live/Success
+  const [activeCards, setActiveCards] = useState([]);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
-    const cycle = async () => {
-      setStage(0);
-      await new Promise(r => setTimeout(r, 1200));
-      setStage(1);
-      await new Promise(r => setTimeout(r, 3000));
-      setStage(2);
-      await new Promise(r => setTimeout(r, 5000));
-      cycle();
-    };
-    cycle();
-    return () => {};
-  }, []);
+    let timeouts = [];
+    setActiveCards([]);
+
+    timeouts.push(setTimeout(() => setActiveCards([1]), 350));
+    timeouts.push(setTimeout(() => setActiveCards([1, 2]), 1100));
+    timeouts.push(setTimeout(() => setActiveCards([1, 2, 3]), 1850));
+
+    timeouts.push(setTimeout(() => {
+      setKey(k => k + 1);
+    }, 7000));
+
+    return () => timeouts.forEach(clearTimeout);
+  }, [key]);
+
+  const matchItems = [
+    { id: 1, score: "92%", width1: "w-20", width2: "w-12" },
+    { id: 2, score: "87%", width1: "w-18", width2: "w-10" },
+    { id: 3, score: "78%", width1: "w-20", width2: "w-12" },
+  ];
 
   return (
-    <div className="w-full h-full flex flex-col items-center justify-center relative p-6 overflow-hidden">
-      <div className="absolute top-4 right-4 text-[10px] font-bold text-white/40 uppercase tracking-widest z-20">
-        InfozaTech
+    <div className="w-full h-full flex flex-col justify-center items-center p-4 sm:p-5 relative select-none">
+      <div className="w-full max-w-[270px] sm:max-w-[290px] flex flex-col gap-2.5">
+        {matchItems.map((item) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ 
+              opacity: activeCards.includes(item.id) ? 1 : 0.25, 
+              y: activeCards.includes(item.id) ? 0 : 6,
+              scale: activeCards.includes(item.id) ? 1 : 0.98
+            }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className={`w-full bg-white/15 backdrop-blur-md rounded-xl border border-white/20 p-2.5 px-3.5 flex items-center justify-between shadow-sm transition-all duration-300 ${activeCards.includes(item.id) ? 'hover:bg-white/20' : ''}`}
+          >
+            <div className="flex items-center gap-2.5">
+              {/* Users Icon Badge */}
+              <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center text-[#2563EB] flex-shrink-0 shadow-sm">
+                <svg className="w-3.5 h-3.5 text-[#2563EB]" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
+                </svg>
+              </div>
+              <div className="flex flex-col gap-1">
+                <div className={`h-1.5 ${item.width1} bg-white/85 rounded-full`} />
+                <div className={`h-1.5 ${item.width2} bg-white/50 rounded-full`} />
+              </div>
+            </div>
+
+            {/* Score Percentage */}
+            <div className="text-white font-bold text-xs tracking-tight">
+              {item.score}
+            </div>
+          </motion.div>
+        ))}
       </div>
-
-      {/* BACKGROUND GLOW */}
-      <motion.div 
-        className="absolute w-44 h-44 bg-blue-600/20 blur-[80px] rounded-full"
-        animate={{ scale: stage === 2 ? [1, 1.3, 1] : 1, opacity: [0.2, 0.4, 0.2] }}
-        transition={{ duration: 4, repeat: Infinity }}
-      />
-
-      <AnimatePresence mode="wait">
-        <motion.div 
-          key={stage === 0 ? "preview" : "launch"}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className="relative w-full h-full flex flex-col items-center justify-center"
-        >
-          {/* THE WEBSITE PREVIEW CARD */}
-          <div className="relative w-full max-w-[280px] bg-white rounded-2xl shadow-2xl overflow-hidden border border-white/20">
-            {/* SaaS UI Elements */}
-            <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex gap-1.5">
-                <div className="w-2 h-2 rounded-full bg-slate-300" />
-                <div className="w-2 h-2 rounded-full bg-slate-300" />
-                <div className="w-2 h-2 rounded-full bg-slate-300" />
-              </div>
-              <div className="h-2 w-16 bg-blue-100 rounded-full" />
-            </div>
-            
-            <div className="p-4 bg-white relative">
-              {/* Hero Section Mock */}
-              <div className="flex flex-col gap-2 mb-4">
-                 <div className="h-3 w-3/4 bg-blue-600 rounded-lg" />
-                 <div className="h-1.5 w-1/2 bg-slate-200 rounded-full" />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                 <div className="aspect-video bg-blue-50 rounded-lg border border-blue-100/50" />
-                 <div className="aspect-video bg-blue-50 rounded-lg border border-blue-100/50" />
-              </div>
-
-              <div className="h-7 w-20 bg-blue-600 rounded-lg shadow-md" />
-
-              {/* Light Shine Effect */}
-              {stage === 2 && (
-                <motion.div 
-                  initial={{ left: "-100%" }}
-                  animate={{ left: "200%" }}
-                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
-                  className="absolute top-0 bottom-0 w-16 bg-gradient-to-r from-transparent via-white/40 to-transparent -skew-x-12"
-                />
-              )}
-            </div>
-
-            {/* PROGRESS BAR (Only in stage 1) */}
-            {stage === 1 && (
-              <div className="absolute top-0 left-0 right-0 h-1 bg-blue-100">
-                <motion.div 
-                  initial={{ width: "80%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: 2.8, ease: "linear" }}
-                  className="h-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.5)]"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* LAUNCH DETAILS OVERLAY */}
-          <div className="mt-8 flex flex-col items-center gap-3">
-             <AnimatePresence mode="wait">
-                {stage === 1 ? (
-                  <motion.p 
-                    key="deploying"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="text-white/60 text-[12px] font-medium tracking-wide animate-pulse"
-                  >
-                    Deploying your website...
-                  </motion.p>
-                ) : stage === 2 ? (
-                  <motion.div 
-                    key="live"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col items-center gap-2"
-                  >
-                     <p className="text-white font-bold text-sm tracking-tight">Website is Live 🚀</p>
-                     <p className="text-blue-200/60 text-[10px] font-mono tracking-wider">www.yourbusiness.com</p>
-                  </motion.div>
-                ) : (
-                  <div className="h-6" /> // spacer
-                )}
-             </AnimatePresence>
-
-             {/* Green Success Checkmark */}
-             {stage === 2 && (
-                <motion.div 
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.5, type: "spring" }}
-                  className="w-10 h-10 rounded-full bg-green-500 shadow-xl shadow-green-900/20 flex items-center justify-center text-white"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={4}>
-                    <motion.path 
-                       initial={{ pathLength: 0 }} 
-                       animate={{ pathLength: 1 }} 
-                       transition={{ duration: 0.4, delay: 0.7 }}
-                       strokeLinecap="round" 
-                       strokeLinejoin="round" 
-                       d="M5 13l4 4L19 7" 
-                    />
-                  </svg>
-                </motion.div>
-             )}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-
-      <motion.div 
-        className="absolute bottom-4 text-[10px] text-white/40 font-bold tracking-[0.2em] uppercase"
-        animate={{ opacity: stage === 2 ? 1 : 0.3 }}
-      >
-        Delivered & Supported
-      </motion.div>
     </div>
   );
 };
 
 const HowItWorks = () => {
   return (
-    <section id="how-it-works" className="bg-[#FFFFFF] py-24 md:py-32 px-6">
-      <div className="text-center max-w-4xl mx-auto mb-20 text-balance">
-        <span className="inline-flex items-center gap-2 text-[13px] font-bold tracking-wider uppercase text-[#2563EB] bg-[#2563EB]/5 px-4 py-1.5 rounded-full mb-6 border border-[#2563EB]/15">
+    <section id="how-it-works" className="bg-[#FFFFFF] py-20 md:py-28 px-6">
+      <div className="text-center max-w-4xl mx-auto mb-16 text-balance">
+        <span className="inline-flex items-center gap-2 text-xs md:text-sm font-semibold text-[#2563EB] bg-white px-6 py-1.5 rounded-full mb-6 border border-slate-200 shadow-sm">
           How It Works
         </span>
 
-        <h2 className="text-3xl md:text-5xl lg:text-6xl font-extrabold text-[#0F0F0F] leading-[1.1] mb-6 tracking-tight">
-          Three simple steps to <br className="hidden md:block" />
-          <span className="text-[#2563EB]">
-            InfozaTech
-          </span>
+        <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium text-[#1E293B] mb-4 tracking-tight">
+          Three simple steps to <span className="text-[#2563EB]">InfozaTech</span>
         </h2>
 
-        <p className="text-lg md:text-xl text-slate-500 max-w-2xl mx-auto font-medium">
-          No complex setup. Just share your idea and let InfozaTech do the heavy lifting to turn your vision into reality.
+        <p className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto font-normal">
+          No complex setup. Just tell us your idea and let InfozaTech do the heavy lifting.
         </p>
       </div>
 
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
         {steps.map((item, index) => (
           <div key={index} className="flex flex-col h-full group">
-            <div className="relative aspect-[16/10] w-full bg-[#0F0F0F] rounded-[2rem] overflow-hidden mb-10 shadow-md">
-              {item.videoUrl ? (
-                <video autoPlay muted loop playsInline className="w-full h-full object-cover">
-                  <source src={item.videoUrl} type="video/mp4" />
-                </video>
-              ) : index === 0 ? (
+            {/* Box dimensions exactly matching reference image */}
+            <div className="relative aspect-[1.35/1] sm:aspect-[1.38/1] md:aspect-[1.32/1] lg:aspect-[1.35/1] w-full bg-[#2563EB] rounded-[1.75rem] sm:rounded-[2rem] overflow-hidden mb-6 shadow-xl shadow-blue-500/15 border border-blue-400/20">
+              {index === 0 ? (
                 <CardAnimation />
               ) : index === 1 ? (
                 <DesignAnimation />
@@ -416,18 +310,18 @@ const HowItWorks = () => {
               )}
             </div>
 
-            <div className="flex flex-col flex-grow mt-2">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-[#2563EB]/5 flex items-center justify-center text-[#2563EB] font-bold text-base transition-all duration-300 group-hover:bg-[#2563EB] group-hover:text-white group-hover:shadow-md">
+            <div className="flex flex-col flex-grow mt-1">
+              <div className="flex items-start gap-3.5 mb-3">
+                <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-300 ${index === 1 ? 'bg-[#2563EB] text-white shadow-sm' : 'bg-blue-50 text-[#2563EB] group-hover:bg-[#2563EB] group-hover:text-white'}`}>
                   {item.step}
                 </div>
 
                 <div className="flex flex-col text-balance">
-                  <h3 className="text-lg md:text-xl md:text-2xl font-bold text-[#0F0F0F] leading-tight mb-3 transition-colors duration-300 group-hover:text-[#2563EB]">
+                  <h3 className="text-base sm:text-lg font-bold text-[#0F0F0F] leading-tight mb-2 transition-colors duration-300 group-hover:text-[#2563EB]">
                     {item.subtitle}
                   </h3>
                   
-                  <p className="text-[#64748b] text-[15px] md:text-base leading-relaxed font-normal">
+                  <p className="text-[#64748b] text-[13px] sm:text-[14px] leading-relaxed font-normal">
                     {item.desc}
                   </p>
                 </div>

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "note-1725510000001",
+    "title": "Welcome to InfozaTech Notes & Follow-ups",
+    "content": "Use this section to keep track of client calls, project milestones, candidate follow-ups, and urgent team reminders.",
+    "category": "General Reminder",
+    "priority": "Medium",
+    "color": "indigo",
+    "followUp": "2026-09-10",
+    "pinned": true,
+    "createdAt": "2026-09-05T10:00:00.000Z",
+    "updatedAt": "2026-09-05T10:00:00.000Z"
+  }
+]

@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Lenis from "lenis";
 
-import Navbar from "./components/common/Navbar";
-import { Header } from "./components/ui/header-1";
+import { NavbarTwoHeader } from "./components/ui/navbar-section-2";
 import AnnouncementBar from "./components/common/AnnouncementBar";
 import Footer from "./components/common/Footer";
 import EmailCapturePopup from "./components/common/EmailCapturePopup";
@@ -20,6 +19,10 @@ import AdminLeads from "./pages/admin/AdminLeads";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminNotes from "./pages/admin/AdminNotes";
 import AdminApplications from "./pages/admin/AdminApplications";
+import AdminCareers from "./pages/admin/AdminCareers";
+import AdminVerifications from "./pages/admin/AdminVerifications";
+import AdminProfile from "./pages/admin/AdminProfile";
+import PublicVerification from "./pages/PublicVerification";
 
 // HOME SECTIONS
 import Home from "./pages/Home";
@@ -41,6 +44,8 @@ import Blog from "./pages/Blog";
 import BlogDetails from "./pages/BlogDetails";
 import ProjectDetail from "./pages/ProjectDetail";
 import Careers from "./pages/Careers"; // NEW CAREERS PAGE
+import Internship from "./pages/Internship"; // VIRTUAL INTERNSHIP PAGE
+import InternshipSubmission from "./pages/InternshipSubmission"; // INTERNSHIP TASK SUBMISSION CHECKLIST
 import ApplyJob from "./pages/ApplyJob";
 
 // LEGAL
@@ -57,19 +62,6 @@ function App() {
     return localStorage.getItem("announcementDismissed") !== "true";
   });
 
-  const [isAtTop, setIsAtTop] = useState(true);
-  const [showHomeHeader, setShowHomeHeader] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsAtTop(window.scrollY < 10);
-      setShowHomeHeader(window.scrollY > 600);
-    };
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   // Cleanup dark mode from html element when on public routes
   useEffect(() => {
     if (!isAdminRoute) {
@@ -77,67 +69,11 @@ function App() {
     }
   }, [isAdminRoute]);
 
-  // Disable Lenis smooth scroll to avoid scroll-locking and touch-interactivity issues
-  /*
-  useEffect(() => {
-    // Only initialize Lenis on desktop / non-touch devices
-    const isTouchDevice = 
-      'ontouchstart' in window || 
-      navigator.maxTouchPoints > 0 || 
-      window.innerWidth < 1024;
-
-    if (isTouchDevice) return;
-
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
-
-    return () => {
-      lenis.destroy();
-    };
-  }, []);
-  */
-
   return (
     <>
       <ScrollToTop />
-      {/* HEADER WRAPPER (ANNOUNCEMENT + NAVBAR) */}
-      {!isAdminRoute ? (
-        isHomeRoute ? (
-          /* Home page: original behavior (hidden on lg+ desktop) */
-          <>
-            <div className="fixed top-0 left-0 right-0 z-[1000] flex flex-col bg-white transition-all duration-300 lg:hidden">
-              {showAnnouncement && <AnnouncementBar isAtTop={isAtTop} isHome={true} onClose={() => setShowAnnouncement(false)} />}
-              <Navbar />
-            </div>
-            {/* Desktop Home Page: Render new Header when scrolled down */}
-            {showHomeHeader && (
-              <div className="hidden lg:block">
-                <Header />
-              </div>
-            )}
-          </>
-        ) : (
-          /* Other pages: new Header on desktop (md+), original Navbar on mobile (<md) */
-          <>
-            <div className="md:hidden fixed top-0 left-0 right-0 z-[1000] flex flex-col bg-white">
-              {showAnnouncement && <AnnouncementBar isAtTop={isAtTop} isHome={false} onClose={() => setShowAnnouncement(false)} />}
-              <Navbar />
-            </div>
-            <div className="hidden md:block">
-              <Header />
-            </div>
-          </>
-        )
-      ) : null}
+      {/* HEADER WRAPPER */}
+      {!isAdminRoute && <NavbarTwoHeader />}
 
       {/* GLOBAL POPUPS */}
       {!isAdminRoute && <EmailCapturePopup />}
@@ -151,10 +87,13 @@ function App() {
         {/* ADMIN ROUTES */}
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
+          <Route path="verifications" element={<AdminVerifications />} />
           <Route path="leads" element={<AdminLeads />} />
           <Route path="messages" element={<AdminMessages />} />
           <Route path="notes" element={<AdminNotes />} />
+          <Route path="careers" element={<AdminCareers />} />
           <Route path="applications" element={<AdminApplications />} />
+          <Route path="profile" element={<AdminProfile />} />
         </Route>
 
         {/* HOME (single-page layout) */}
@@ -190,6 +129,7 @@ function App() {
         />
 
         {/* INDIVIDUAL PAGES */}
+        <Route path="/verify" element={<PublicVerification />} />
         <Route path="/about" element={<AboutInfozaTech />} />
         <Route path="/services" element={<Services />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
@@ -199,6 +139,10 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/careers" element={<Careers />} />
+        <Route path="/internship" element={<Internship />} />
+        <Route path="/internship/submit" element={<InternshipSubmission />} />
+        <Route path="/internship/submission" element={<InternshipSubmission />} />
+        <Route path="/careers/internship" element={<Navigate to="/internship" replace />} />
         <Route path="/apply" element={<ApplyJob />} />
         <Route path="/startup-website-package" element={<Navigate to="/contact?package=startup" replace />} />
 
