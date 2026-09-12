@@ -21,6 +21,7 @@ import AdminNotes from "./pages/admin/AdminNotes";
 import AdminApplications from "./pages/admin/AdminApplications";
 import AdminCareers from "./pages/admin/AdminCareers";
 import AdminVerifications from "./pages/admin/AdminVerifications";
+import AdminInternshipSettings from "./pages/admin/AdminInternshipSettings";
 import AdminProfile from "./pages/admin/AdminProfile";
 import PublicVerification from "./pages/PublicVerification";
 
@@ -88,6 +89,7 @@ function App() {
         <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
           <Route index element={<AdminDashboard />} />
           <Route path="verifications" element={<AdminVerifications />} />
+          <Route path="internship-settings" element={<AdminInternshipSettings />} />
           <Route path="leads" element={<AdminLeads />} />
           <Route path="messages" element={<AdminMessages />} />
           <Route path="notes" element={<AdminNotes />} />

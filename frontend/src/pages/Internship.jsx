@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import {
+  fetchInternshipSettings,
+  getCachedInternshipSettings
+} from '../services/settingsData';
 import {
   Calendar,
   CheckCircle2,
@@ -29,9 +33,6 @@ import {
   X,
   ChevronDown,
 } from 'lucide-react';
-
-const APPLY_FORM_URL = "https://forms.gle/SjDCcUxkjRAGpDRx6";
-const SUBMISSION_FORM_URL = "https://forms.gle/oS3KLgW8nnPpxKXA6";
 
 const programHighlights = [
   {
@@ -177,6 +178,17 @@ const faqs = [
 
 export default function Internship() {
   const [openFaq, setOpenFaq] = useState(null);
+  const [settings, setSettings] = useState(getCachedInternshipSettings);
+
+  useEffect(() => {
+    fetchInternshipSettings().then((res) => {
+      if (res.success && res.data) {
+        setSettings(res.data);
+      }
+    });
+  }, []);
+
+  const applyUrl = settings?.applyUrl || "https://forms.gle/SjDCcUxkjRAGpDRx6";
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -241,7 +253,7 @@ export default function Internship() {
             {/* Primary Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md sm:max-w-none mx-auto mb-3">
               <a
-                href={APPLY_FORM_URL}
+                href={applyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563EB] hover:bg-[#1d4ed8] text-white font-medium px-7 py-3.5 text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all hover:scale-[1.01] active:scale-[0.98]"
@@ -414,7 +426,7 @@ export default function Internship() {
                   <div className="pt-4 mt-5 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
                     <span className="text-xs text-slate-400 font-medium">1 Month Program</span>
                     <a
-                      href={APPLY_FORM_URL}
+                      href={applyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs sm:text-sm font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
@@ -451,7 +463,7 @@ export default function Internship() {
 
             <div className="shrink-0 w-full md:w-auto relative z-10">
               <a
-                href={APPLY_FORM_URL}
+                href={applyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full md:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white text-blue-600 hover:bg-blue-50 font-bold px-8 py-4 text-center text-sm sm:text-base shadow-lg shadow-black/15 transition-all hover:scale-[1.02] active:scale-[0.98]"

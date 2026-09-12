@@ -149,3 +149,21 @@ export const verifyDocumentById = async (verificationId) => {
     };
   }
 };
+
+/**
+ * Bulk upload verification records (Admin)
+ */
+export const bulkUploadVerifications = async (records) => {
+  try {
+    const res = await fetch(`${API_URL}/api/verifications/bulk`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ verifications: records })
+    });
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error("Error bulk uploading verifications:", err);
+    return { success: false, message: "Network error: Unable to connect to server." };
+  }
+};

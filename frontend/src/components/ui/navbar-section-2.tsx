@@ -31,6 +31,7 @@ import {
   Scale,
 } from "lucide-react";
 import logo from "../../assets/images/logo/infozatech-logo.png";
+import { getCachedInternshipSettings } from "../../services/settingsData";
 
 type NavItem = {
   label: string;
@@ -71,13 +72,23 @@ const serviceSubItems = [
  * - Rounded full floating capsule container
  * - Blue InfozaTech Logo on left with blue-glow hamburger button
  * - Inner white capsule with direct navigation links
- * - Blue capsule CTA button on right ("Book a Call")
+ * - Blue capsule CTA button on right ("Apply Now")
  * - Smart scroll: hides on scroll down, shows on scroll up smoothly
  * - Full mega all-pages side drawer on click
  */
 export function NavbarTwoHeader() {
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [applyUrl, setApplyUrl] = useState(() => getCachedInternshipSettings().applyUrl);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setApplyUrl(getCachedInternshipSettings().applyUrl);
+    };
+    window.addEventListener('internship_settings_updated', handleUpdate);
+    return () => window.removeEventListener('internship_settings_updated', handleUpdate);
+  }, []);
+
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     services: false,
   });
@@ -241,14 +252,16 @@ export function NavbarTwoHeader() {
           </nav>
         </div>
 
-        {/* Right: Sleek Blue Capsule Button ("Book a Call") */}
+        {/* Right: Sleek Blue Capsule Button ("Apply Now") */}
         <div className="flex items-center gap-2 pr-1">
           <a
-            href="tel:+919155596712"
-            className="group flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-5 py-2.5 text-xs font-semibold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+            href={applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 px-6 py-2.5 text-[14px] sm:text-[15px] font-bold text-white shadow-[0_4px_14px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.45)] transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Sparkles className="size-3.5 text-blue-200" />
-            <span>Book a Call</span>
+            <Sparkles className="size-4 text-blue-200" />
+            <span>Apply Now</span>
           </a>
         </div>
       </div>

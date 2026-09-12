@@ -1,10 +1,12 @@
 /* eslint-disable */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   ShieldCheck,
   Award,
   FileCheck,
   Plus,
+  Link2,
   Search,
   RefreshCw,
   Eye,
@@ -23,14 +25,20 @@ import {
   Filter,
   ExternalLink,
   Ban,
-  Check
+  Check,
+  Upload,
+  Download,
+  FileSpreadsheet,
+  FileUp,
+  ClipboardList
 } from "lucide-react";
 import {
   fetchVerifications,
   createVerification,
   updateVerification,
   revokeVerification,
-  deleteVerification
+  deleteVerification,
+  bulkUploadVerifications
 } from "../../services/verificationsData";
 import QRCodeDisplay from "../../components/common/QRCodeDisplay";
 
@@ -79,6 +87,16 @@ export default function AdminVerifications() {
   const [editingRecord, setEditingRecord] = useState(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  // Bulk Upload State
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+  const [bulkMode, setBulkMode] = useState("file"); // 'file' | 'paste'
+  const [bulkRawText, setBulkRawText] = useState("");
+  const [bulkParsedData, setBulkParsedData] = useState([]);
+  const [bulkErrors, setBulkErrors] = useState([]);
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
+  const [bulkFileName, setBulkFileName] = useState("");
+  const fileInputRef = useRef(null);
+
   // Form State
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [formError, setFormError] = useState("");
@@ -103,6 +121,188 @@ export default function AdminVerifications() {
     setTimeout(() => {
       setNotification({ show: false, message: "", type: "success" });
     }, 4000);
+  };
+
+  /**
+   * Helper: Parse CSV or Tab-separated text flexibly
+   */
+  const parseCSVData = (text) => {
+    if (!text || !text.trim()) return { records: [], errors: ["File or text is empty."] };
+
+    const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+    if (lines.length < 2) {
+      return { records: [], errors: ["Please provide a header row and at least 1 student row."] };
+    }
+
+    const isTabSeparated = lines[0].includes("\t");
+
+    const parseLine = (line) => {
+      if (isTabSeparated) {
+        return line.split("\t").map((s) => s.trim().replace(/^["']|["']$/g, ""));
+      }
+      const result = [];
+      let current = "";
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"' || char === "'") {
+          inQuotes = !inQuotes;
+        } else if (char === "," && !inQuotes) {
+          result.push(current.trim().replace(/^["']|["']$/g, ""));
+          current = "";
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim().replace(/^["']|["']$/g, ""));
+      return result;
+    };
+
+    const headerLine = lines[0];
+    const rawHeaders = parseLine(headerLine);
+    const normalizedHeaders = rawHeaders.map((h) => h.toLowerCase().replace(/[^a-z0-9]/g, ""));
+
+    // Find column positions by common synonyms
+    const idIdx = normalizedHeaders.findIndex((h) =>
+      h.includes("cert") || h.includes("code") || h.includes("verif") || h.includes("id") || h.includes("no")
+    );
+    const nameIdx = normalizedHeaders.findIndex((h) =>
+      h.includes("name") || h.includes("student") || h.includes("candidate")
+    );
+    const domainIdx = normalizedHeaders.findIndex((h) =>
+      h.includes("domain") || h.includes("stream") || h.includes("course") || h.includes("role") || h.includes("field")
+    );
+    const durationIdx = normalizedHeaders.findIndex((h) =>
+      h.includes("duration") || h.includes("period") || h.includes("week") || h.includes("month")
+    );
+    const startIdx = normalizedHeaders.findIndex((h) =>
+      h.includes("start") || h.includes("from") || h.includes("begin")
+    );
+    const endIdx = normalizedHeaders.findIndex((h) =>
+      h.includes("end") || h.includes("award") || h.includes("to") || h.includes("issue") || h.includes("completion")
+    );
+    const emailIdx = normalizedHeaders.findIndex((h) => h.includes("email") || h.includes("mail"));
+    const statusIdx = normalizedHeaders.findIndex((h) => h.includes("status"));
+
+    const records = [];
+    const errors = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const rawLine = lines[i].trim();
+      if (!rawLine) continue;
+
+      const values = parseLine(rawLine);
+
+      const verificationId = (idIdx !== -1 ? values[idIdx] : values[0] || "").trim();
+      const studentName = (nameIdx !== -1 ? values[nameIdx] : values[1] || "").trim();
+      const domain = (domainIdx !== -1 ? values[domainIdx] : values[2] || "Web Development").trim();
+      const duration = (durationIdx !== -1 ? values[durationIdx] : values[3] || "4 Weeks").trim();
+      const startDate = (startIdx !== -1 ? values[startIdx] : values[4] || "").trim();
+      const endDate = (endIdx !== -1 ? values[endIdx] : values[5] || "").trim();
+      const email = (emailIdx !== -1 ? values[emailIdx] : values[6] || "").trim();
+      const status = (statusIdx !== -1 ? values[statusIdx] : "Verified").trim();
+
+      if (!verificationId || !studentName) {
+        errors.push(`Row ${i + 1}: Missing ${!verificationId ? "Certification No" : "Student Name"}`);
+        continue;
+      }
+
+      records.push({
+        verificationId,
+        certificateId: verificationId,
+        internshipId: verificationId,
+        studentName,
+        domain: domain || "Web Development",
+        duration: duration || "4 Weeks",
+        startDate: startDate || new Date().toISOString().split("T")[0],
+        endDate: endDate || new Date().toISOString().split("T")[0],
+        email: email || "",
+        status: status.toLowerCase().includes("revoke") ? "Revoked" : "Verified",
+        documentType: "Internship Certificate",
+        issuedBy: "InfozaTech"
+      });
+    }
+
+    return { records, errors };
+  };
+
+  /**
+   * Helper: Download Sample CSV Template
+   */
+  const downloadSampleTemplate = () => {
+    const csvContent =
+      "data:text/csv;charset=utf-8," +
+      "Certification No,Student Name,Domain,Duration,Starting Date,Award Date,Email,Status\n" +
+      "ITZ26001,Deepak Kumar,Web Development,4 Weeks,2026-09-10,2026-10-10,deepak@gmail.com,Verified\n" +
+      "ITZ26002,Priya Patel,Data Science,4 Weeks,2026-09-10,2026-10-10,priya@gmail.com,Verified\n" +
+      "ITZ26003,Amit Verma,Python Programming,4 Weeks,2026-09-15,2026-10-15,amit@gmail.com,Verified\n";
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "infozatech_students_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  /**
+   * Handle Bulk File Input Change
+   */
+  const handleBulkFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBulkFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target.result;
+      setBulkRawText(text);
+      const { records, errors } = parseCSVData(text);
+      setBulkParsedData(records);
+      setBulkErrors(errors);
+    };
+    reader.readAsText(file);
+  };
+
+  /**
+   * Handle Bulk Raw Text Change (Paste from Excel/Sheets)
+   */
+  const handleBulkTextChange = (text) => {
+    setBulkRawText(text);
+    const { records, errors } = parseCSVData(text);
+    setBulkParsedData(records);
+    setBulkErrors(errors);
+  };
+
+  /**
+   * Submit Bulk Records
+   */
+  const handleBulkUploadSubmit = async () => {
+    if (bulkParsedData.length === 0) {
+      setBulkErrors(["Please upload a valid CSV file or paste student rows."]);
+      return;
+    }
+
+    setBulkSubmitting(true);
+    try {
+      const res = await bulkUploadVerifications(bulkParsedData);
+      if (res.success) {
+        showNotice(res.message || `Successfully uploaded ${bulkParsedData.length} records!`);
+        setIsBulkModalOpen(false);
+        setBulkRawText("");
+        setBulkParsedData([]);
+        setBulkErrors([]);
+        setBulkFileName("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+        loadData();
+      } else {
+        setBulkErrors([res.message || "Failed to upload records."]);
+      }
+    } catch (err) {
+      setBulkErrors(["Unexpected network error. Please try again."]);
+    } finally {
+      setBulkSubmitting(false);
+    }
   };
 
   const openAddForm = () => {
@@ -293,6 +493,15 @@ export default function AdminVerifications() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            to="/admin/internship-settings"
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/50 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 rounded-xl text-sm font-semibold transition-colors border border-indigo-200 dark:border-indigo-800"
+            title="Change 1-Month Virtual Internship Apply Link"
+          >
+            <Link2 size={16} />
+            <span className="hidden sm:inline">Change Apply Link</span>
+          </Link>
+
           <button
             onClick={loadData}
             disabled={loading}
@@ -314,11 +523,23 @@ export default function AdminVerifications() {
           </a>
 
           <button
+            onClick={() => {
+              setIsBulkModalOpen(true);
+              setBulkErrors([]);
+            }}
+            className="flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm text-sm font-semibold transition-all hover:shadow-emerald-500/25 active:scale-[0.98]"
+            title="Upload multiple students from CSV or Excel file"
+          >
+            <Upload size={18} />
+            <span>Bulk Upload (CSV / Excel)</span>
+          </button>
+
+          <button
             onClick={openAddForm}
             className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm text-sm font-semibold transition-all hover:shadow-indigo-500/25 active:scale-[0.98]"
           >
             <Plus size={18} />
-            <span>Add Verification Record</span>
+            <span>Add Single Record</span>
           </button>
         </div>
       </div>
@@ -1033,6 +1254,250 @@ export default function AdminVerifications() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          BULK UPLOAD MODAL (CSV / EXCEL / PASTE)
+      ========================================================================= */}
+      {isBulkModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 rounded-3xl border border-gray-200 dark:border-zinc-800 shadow-2xl w-full max-w-4xl p-6 sm:p-8 my-8 max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="flex items-start justify-between pb-5 border-b border-gray-100 dark:border-zinc-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <FileSpreadsheet size={24} />
+                </div>
+                <div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+                    Bulk Upload Students & Certificates
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                    Import multiple records instantly via CSV or paste directly from Google Sheets
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={downloadSampleTemplate}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold transition-colors border border-gray-200 dark:border-zinc-700"
+                  title="Download Sample CSV template"
+                >
+                  <Download size={14} />
+                  <span>Download Sample CSV</span>
+                </button>
+
+                <button
+                  onClick={() => setIsBulkModalOpen(false)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-xl hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div className="overflow-y-auto py-5 space-y-6 flex-1 pr-1">
+              
+              {/* Mode Switcher Tabs */}
+              <div className="flex items-center gap-2 p-1 bg-gray-100 dark:bg-zinc-800/80 rounded-2xl w-fit">
+                <button
+                  type="button"
+                  onClick={() => setBulkMode("file")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    bulkMode === "file"
+                      ? "bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
+                  }`}
+                >
+                  <FileUp size={15} />
+                  <span>Upload .CSV File</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setBulkMode("paste")}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    bulkMode === "paste"
+                      ? "bg-white dark:bg-zinc-900 text-gray-900 dark:text-white shadow-xs"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900"
+                  }`}
+                >
+                  <ClipboardList size={15} />
+                  <span>Paste from Excel / Google Sheets</span>
+                </button>
+              </div>
+
+              {/* Mode 1: File Drag & Drop */}
+              {bulkMode === "file" && (
+                <div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept=".csv,text/csv,text/plain"
+                    onChange={handleBulkFileChange}
+                    className="hidden"
+                  />
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 dark:border-zinc-700 hover:border-emerald-500 dark:hover:border-emerald-500 bg-gray-50/50 dark:bg-zinc-800/30 hover:bg-emerald-50/20 dark:hover:bg-emerald-950/10 rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-3"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-emerald-100/70 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-xs">
+                      <Upload size={28} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-800 dark:text-white">
+                        {bulkFileName ? bulkFileName : "Click or drag & drop CSV file here"}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Supports standard .csv file exported from Google Sheets or Excel
+                      </p>
+                    </div>
+                    {bulkFileName && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-semibold">
+                        <Check size={14} /> File loaded successfully
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Mode 2: Direct Paste */}
+              {bulkMode === "paste" && (
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 flex items-center justify-between">
+                    <span>Paste raw rows directly (Header in row 1, student data in next rows):</span>
+                    <span className="text-gray-400 font-normal">Excel tabs & CSV commas supported</span>
+                  </label>
+                  <textarea
+                    rows={6}
+                    value={bulkRawText}
+                    onChange={(e) => handleBulkTextChange(e.target.value)}
+                    placeholder={`Certification No,Student Name,Domain,Duration,Starting Date,Award Date,Email\nITZ26001,Deepak Kumar,Web Development,4 Weeks,2026-09-10,2026-10-10,deepak@gmail.com\nITZ26002,Priya Patel,Data Science,4 Weeks,2026-09-10,2026-10-10,priya@gmail.com`}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-800/60 border border-gray-200 dark:border-zinc-700 rounded-2xl outline-none focus:border-emerald-500 text-gray-900 dark:text-white text-xs font-mono resize-none leading-relaxed"
+                  />
+                </div>
+              )}
+
+              {/* Validation & Live Preview Section */}
+              {(bulkParsedData.length > 0 || bulkErrors.length > 0) && (
+                <div className="space-y-4 pt-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-gray-900 dark:text-white">Live Data Preview</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-xs font-bold">
+                        ✓ {bulkParsedData.length} Valid Records
+                      </span>
+                      {bulkErrors.length > 0 && (
+                        <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-xs font-bold">
+                          ⚠ {bulkErrors.length} Errors / Skipped
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Errors List if any */}
+                  {bulkErrors.length > 0 && (
+                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/60 text-rose-800 dark:text-rose-300 text-xs space-y-1">
+                      <div className="font-bold flex items-center gap-1.5 mb-1">
+                        <AlertTriangle size={14} /> Please check these rows:
+                      </div>
+                      {bulkErrors.slice(0, 5).map((err, idx) => (
+                        <div key={idx}>• {err}</div>
+                      ))}
+                      {bulkErrors.length > 5 && (
+                        <div className="text-gray-500 mt-1">...and {bulkErrors.length - 5} more skipped rows.</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Preview Table */}
+                  {bulkParsedData.length > 0 && (
+                    <div className="border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-2xs">
+                      <div className="max-h-60 overflow-y-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead className="bg-gray-100 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 sticky top-0 font-bold">
+                            <tr>
+                              <th className="p-2.5 pl-4">#</th>
+                              <th className="p-2.5">Certification No</th>
+                              <th className="p-2.5">Student Name</th>
+                              <th className="p-2.5">Domain</th>
+                              <th className="p-2.5">Duration</th>
+                              <th className="p-2.5">Starting Date</th>
+                              <th className="p-2.5 pr-4">Award Date</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 dark:divide-zinc-800/80">
+                            {bulkParsedData.slice(0, 8).map((row, idx) => (
+                              <tr key={idx} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/30">
+                                <td className="p-2.5 pl-4 text-gray-400">{idx + 1}</td>
+                                <td className="p-2.5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                                  {row.verificationId}
+                                </td>
+                                <td className="p-2.5 font-semibold text-gray-900 dark:text-white">
+                                  {row.studentName}
+                                </td>
+                                <td className="p-2.5 text-gray-600 dark:text-gray-300">{row.domain}</td>
+                                <td className="p-2.5 text-gray-500 dark:text-gray-400">{row.duration}</td>
+                                <td className="p-2.5 text-gray-500 dark:text-gray-400">{row.startDate}</td>
+                                <td className="p-2.5 pr-4 text-gray-500 dark:text-gray-400">{row.endDate}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {bulkParsedData.length > 8 && (
+                        <div className="p-2 text-center text-xs text-gray-400 bg-gray-50/50 dark:bg-zinc-800/40 border-t border-gray-100 dark:border-zinc-800">
+                          Showing first 8 of {bulkParsedData.length} records.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-zinc-800 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsBulkModalOpen(false);
+                  setBulkRawText("");
+                  setBulkParsedData([]);
+                  setBulkErrors([]);
+                  setBulkFileName("");
+                }}
+                className="px-5 py-2.5 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-medium transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleBulkUploadSubmit}
+                disabled={bulkSubmitting || bulkParsedData.length === 0}
+                className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2"
+              >
+                {bulkSubmitting ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    <span>Uploading {bulkParsedData.length} Records...</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 size={18} />
+                    <span>Confirm & Upload ({bulkParsedData.length} Students)</span>
+                  </>
+                )}
+              </button>
+            </div>
+
           </div>
         </div>
       )}

@@ -122,7 +122,7 @@ export const projectsData = [
     imagePosition: "object-cover object-top",
     hideOnHome: true,
     description: "A comprehensive high-performance trading dashboard clone featuring real-time market data, portfolio tracking, and seamless order execution UI.",
-    liveLink: "https://zerodha-himanshu.onrender.com/",
+    liveLink: "https://zerodha.com/",
     features: [
       "Real-time market data streaming and interactive candlestick charting for accurate technical analysis.",
       "Seamless order execution interface with instant buy/sell mechanics mirroring top-tier brokerage platforms.",

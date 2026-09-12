@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, MessageSquare, StickyNote, Briefcase, GraduationCap, UserCheck, X } from "lucide-react";
+import { LayoutDashboard, Users, MessageSquare, StickyNote, Briefcase, GraduationCap, UserCheck, Link2, X } from "lucide-react";
 
 export default function Sidebar({ isOpen, toggleSidebar }) {
   const location = useLocation();
@@ -9,6 +9,7 @@ export default function Sidebar({ isOpen, toggleSidebar }) {
   const links = [
     { name: "Dashboard", path: "/admin", icon: LayoutDashboard },
     { name: "Internship Management", path: "/admin/verifications", icon: GraduationCap },
+    { name: "Internship Apply Link", path: "/admin/internship-settings", icon: Link2 },
     { name: "Leads", path: "/admin/leads", icon: Users },
     { name: "Messages", path: "/admin/messages", icon: MessageSquare },
     { name: "Job Openings", path: "/admin/careers", icon: Briefcase },

@@ -24,6 +24,26 @@ const LEADS_FILE = path.join(__dirname, 'leads.json');
 const APPLICATIONS_FILE = path.join(__dirname, 'applications.json');
 const VERIFICATIONS_FILE = path.join(__dirname, 'verifications.json');
 const NOTES_FILE = path.join(__dirname, 'notes.json');
+const INTERNSHIP_SETTINGS_FILE = path.join(__dirname, 'internship_settings.json');
+
+const DEFAULT_INTERNSHIP_SETTINGS = {
+  applyUrl: "https://forms.gle/SjDCcUxkjRAGpDRx6",
+  lastUpdated: new Date().toISOString()
+};
+
+// Helper to read object data from file
+const readObjectData = (filePath, defaultData) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return defaultData;
+    }
+    const data = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(data || '{}');
+  } catch (error) {
+    console.error(`Error reading from ${filePath}:`, error);
+    return defaultData;
+  }
+};
 
 // Helper to read data from file
 const readData = (filePath) => {
@@ -54,6 +74,7 @@ const leads = readData(LEADS_FILE);
 const applications = readData(APPLICATIONS_FILE);
 let verifications = readData(VERIFICATIONS_FILE);
 let notes = readData(NOTES_FILE);
+let internshipSettings = readObjectData(INTERNSHIP_SETTINGS_FILE, DEFAULT_INTERNSHIP_SETTINGS);
 
 // Request Logger
 app.use((req, res, next) => {
@@ -538,6 +559,138 @@ app.post('/api/verifications', async (req, res) => {
   }
 });
 
+// 11b. POST Bulk upload verification records (Admin)
+app.post('/api/verifications/bulk', async (req, res) => {
+  try {
+    const { verifications: rawRecords } = req.body;
+
+    if (!Array.isArray(rawRecords) || rawRecords.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No verification records provided. Please upload a valid list."
+      });
+    }
+
+    let addedCount = 0;
+    let updatedCount = 0;
+    const errors = [];
+    const validRecords = [];
+
+    // Filter & Validate
+    for (let i = 0; i < rawRecords.length; i++) {
+      const item = rawRecords[i];
+      const studentName = (item.studentName || item.name || "").trim();
+      const verificationId = (item.verificationId || item.certificateId || item.code || item.certificationNo || "").trim();
+      const domain = (item.domain || item.stream || item.course || "Web Development").trim();
+      const duration = (item.duration || "4 Weeks").trim();
+      const startDate = (item.startDate || item.startingDate || "").trim();
+      const endDate = (item.endDate || item.awardDate || item.completionDate || "").trim();
+      const documentType = (item.documentType || "Internship Certificate").trim();
+      const status = (item.status === "Revoked" ? "Revoked" : "Verified");
+      const email = (item.email || "").trim();
+      const notes = (item.notes || "").trim();
+
+      if (!studentName || !verificationId) {
+        errors.push(`Row ${i + 1}: Missing Student Name or Verification ID.`);
+        continue;
+      }
+
+      validRecords.push({
+        studentName,
+        verificationId,
+        documentType,
+        internshipId: (item.internshipId || verificationId).trim(),
+        certificateId: (item.certificateId || verificationId).trim(),
+        domain,
+        startDate: startDate || new Date().toISOString().split('T')[0],
+        endDate: endDate || new Date().toISOString().split('T')[0],
+        duration,
+        status,
+        email,
+        notes,
+        issuedBy: (item.issuedBy || "InfozaTech").trim()
+      });
+    }
+
+    if (validRecords.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid student records found in file. Please ensure 'Certification No' and 'Student Name' are provided.",
+        errors
+      });
+    }
+
+    if (supabase) {
+      for (const rec of validRecords) {
+        const { data: existing } = await supabase
+          .from('verification_records')
+          .select('id')
+          .ilike('verification_id', rec.verificationId)
+          .limit(1);
+
+        if (existing && existing.length > 0) {
+          const rowToUpdate = toSupabaseRow(rec, true);
+          await supabase
+            .from('verification_records')
+            .update(rowToUpdate)
+            .eq('id', existing[0].id);
+          updatedCount++;
+        } else {
+          const rowToInsert = toSupabaseRow(rec);
+          await supabase
+            .from('verification_records')
+            .insert([rowToInsert]);
+          addedCount++;
+        }
+      }
+    } else {
+      verifications = readData(VERIFICATIONS_FILE);
+
+      for (const rec of validRecords) {
+        const index = verifications.findIndex(
+          v => (v.verificationId || "").trim().toLowerCase() === rec.verificationId.toLowerCase()
+        );
+
+        if (index !== -1) {
+          verifications[index] = {
+            ...verifications[index],
+            ...rec,
+            updatedAt: new Date().toISOString()
+          };
+          updatedCount++;
+        } else {
+          const newRecord = {
+            id: 'verif-' + Date.now().toString() + '-' + Math.random().toString(36).substr(2, 6),
+            ...rec,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          verifications.unshift(newRecord);
+          addedCount++;
+        }
+      }
+
+      writeData(VERIFICATIONS_FILE, verifications);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Successfully processed ${validRecords.length} records (${addedCount} added, ${updatedCount} updated).`,
+      added: addedCount,
+      updated: updatedCount,
+      totalProcessed: validRecords.length,
+      errors: errors.length > 0 ? errors : undefined
+    });
+
+  } catch (error) {
+    console.error("Bulk Upload Server Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error during bulk upload"
+    });
+  }
+});
+
 // 12. PUT update verification record (Admin)
 app.put('/api/verifications/:id', async (req, res) => {
   try {
@@ -950,6 +1103,68 @@ app.delete('/api/notes/:id', (req, res) => {
     });
   }
 });
+
+// ============================================================================
+// INTERNSHIP & BATCH SETTINGS API
+// ============================================================================
+
+// 1. GET Internship Settings (Public endpoint)
+app.get('/api/settings/internship', (req, res) => {
+  try {
+    internshipSettings = readObjectData(INTERNSHIP_SETTINGS_FILE, DEFAULT_INTERNSHIP_SETTINGS);
+    res.status(200).json({
+      success: true,
+      data: {
+        ...DEFAULT_INTERNSHIP_SETTINGS,
+        ...internshipSettings
+      }
+    });
+  } catch (error) {
+    console.error("Error getting internship settings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      data: DEFAULT_INTERNSHIP_SETTINGS
+    });
+  }
+});
+
+// 2. UPDATE / SAVE Internship Apply Link (Admin)
+const handleUpdateInternshipSettings = (req, res) => {
+  try {
+    const { applyUrl } = req.body;
+
+    if (!applyUrl || !applyUrl.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Internship Apply URL is required"
+      });
+    }
+
+    const updatedSettings = {
+      applyUrl: applyUrl.trim(),
+      lastUpdated: new Date().toISOString()
+    };
+
+    internshipSettings = updatedSettings;
+    writeData(INTERNSHIP_SETTINGS_FILE, updatedSettings);
+
+    res.status(200).json({
+      success: true,
+      message: "Internship apply link updated successfully",
+      data: updatedSettings
+    });
+  } catch (error) {
+    console.error("Error updating internship settings:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error"
+    });
+  }
+};
+
+app.put('/api/settings/internship', handleUpdateInternshipSettings);
+app.post('/api/settings/internship', handleUpdateInternshipSettings);
 
 // Serve static files from React frontend
 const frontendDistPath = path.join(__dirname, '../frontend/dist');

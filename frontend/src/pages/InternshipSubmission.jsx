@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import {
+  fetchInternshipSettings,
+  getCachedInternshipSettings
+} from '../services/settingsData';
 import {
   Send,
   CheckCircle2,
@@ -15,14 +19,22 @@ import {
   Check,
 } from 'lucide-react';
 
-const SUBMISSION_FORM_URL = "https://forms.gle/oS3KLgW8nnPpxKXA6";
-const APPLY_FORM_URL = "https://forms.gle/SjDCcUxkjRAGpDRx6";
-
 export default function InternshipSubmission() {
+  const [settings, setSettings] = useState(getCachedInternshipSettings);
   const [confirmedTasks, setConfirmedTasks] = useState(false);
   const [confirmedGithub, setConfirmedGithub] = useState(false);
   const [confirmedLinkedin, setConfirmedLinkedin] = useState(false);
   const [confirmedAccuracy, setConfirmedAccuracy] = useState(false);
+
+  useEffect(() => {
+    fetchInternshipSettings().then((res) => {
+      if (res.success && res.data) {
+        setSettings(res.data);
+      }
+    });
+  }, []);
+
+  const submissionUrl = settings?.submissionUrl || "https://forms.gle/oS3KLgW8nnPpxKXA6";
 
   // Master confirmation
   const allPrerequisitesChecked =
@@ -174,7 +186,7 @@ export default function InternshipSubmission() {
           <div className="space-y-3">
             {allPrerequisitesChecked ? (
               <a
-                href={SUBMISSION_FORM_URL}
+                href={submissionUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 text-center text-base shadow-[0_6px_20px_rgba(37,99,235,0.35)] transition-all hover:scale-[1.01] active:scale-[0.98]"

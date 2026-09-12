@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Check, X, ArrowRight, Award, Users, Cpu, ShieldCheck } from 'lucide-react';
+import { Check, X, ArrowRight, Award, Users, Cpu, ShieldCheck, Sparkles, ExternalLink } from 'lucide-react';
 import ScrollReveal from '../ui/scroll-reveal';
 import logoImg from '../../assets/images/logo/infozatech-logo.png';
 import { useNavigate } from 'react-router-dom';
+import { getInternshipSettings } from '../../services/settingsData';
 
 // Animated Counter Component
 const AnimatedCounter = ({ value, duration = 1.5 }) => {
@@ -57,6 +58,16 @@ const AnimatedCounter = ({ value, duration = 1.5 }) => {
 
 const WhyFounders = () => {
   const navigate = useNavigate();
+  const [applyUrl, setApplyUrl] = useState(() => getInternshipSettings().applyUrl);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setApplyUrl(getInternshipSettings().applyUrl);
+    };
+    window.addEventListener('internship_settings_updated', handleUpdate);
+    return () => window.removeEventListener('internship_settings_updated', handleUpdate);
+  }, []);
+
   const handleContactClick = (e) => {
     e.preventDefault();
     const contactElement = document.getElementById('contact');
@@ -255,44 +266,45 @@ const WhyFounders = () => {
           </div>
         </ScrollReveal>
 
-        {/* CTA Section (Using high-end contrast dark block typical of premium designs) */}
+        {/* CTA Section (Matching 1st Image Exact Design) */}
         <ScrollReveal direction="up" delay={0.1}>
-          <div className="relative rounded-3xl p-8 md:p-14 text-center overflow-hidden border border-slate-900 bg-gradient-to-b from-[#0F0F0F] to-[#070A13] text-white shadow-2xl">
-            
-            {/* CTA Background Ambient Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[350px] md:w-[500px] h-[350px] md:h-[500px] bg-gradient-to-r from-blue-500/5 to-cyan-500/5 blur-[90px] rounded-full pointer-events-none z-0"></div>
+          <div className="max-w-5xl mx-auto">
+            <div className="rounded-3xl p-8 sm:p-10 md:p-12 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white shadow-[0_20px_50px_rgba(37,99,235,0.3)] flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left relative overflow-hidden">
+              {/* Ambient decorative glow inside card */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-400/20 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="relative z-10 max-w-2xl mx-auto">
-              <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight">
-                Ready To Build <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Something Amazing?</span>
-              </h3>
-              
-              <p className="mt-4 text-slate-300 text-sm md:text-base leading-relaxed font-medium">
-                Launch your next website, mobile app, SaaS platform or AI solution with InfozaTech.
-              </p>
+              <div className="max-w-xl relative z-10">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 border border-white/25 px-3.5 py-1 text-xs font-bold !text-white text-white backdrop-blur-sm mb-4 shadow-sm">
+                  <Sparkles className="size-3.5 text-blue-200" />
+                  <span className="!text-white text-white font-semibold tracking-wide">Custom Digital Solutions</span>
+                </div>
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-semibold !text-white text-white tracking-tight mb-3 leading-tight">
+                  Ready To Build Something Amazing?
+                </h3>
+                <p className="text-xs sm:text-sm !text-blue-100 text-blue-100 leading-relaxed font-normal">
+                  Launch your next website, mobile app, SaaS platform or AI solution with InfozaTech.
+                </p>
+              </div>
 
-              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a 
+              <div className="shrink-0 w-full md:w-auto relative z-10 flex flex-col sm:flex-row items-center gap-3">
+                <a
                   href="/contact"
                   onClick={handleContactClick}
-                  className="flex items-center justify-center gap-2 w-full sm:w-auto bg-[#2563EB] text-white font-bold text-sm tracking-wide px-8 py-3.5 rounded-full shadow-md hover:bg-[#1d4ed8] hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300"
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2.5 rounded-2xl bg-white text-blue-600 hover:bg-blue-50 font-bold px-8 py-4 text-center text-sm sm:text-base shadow-lg shadow-black/15 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Start Your Project
-                  <ArrowRight size={16} />
+                  <span className="font-bold text-blue-600">Start Your Project</span>
+                  <ArrowRight className="size-4.5 text-blue-600" />
                 </a>
 
-                <a 
-                  href="/projects" 
-                  onClick={(e) => {
-                    const el = document.getElementById('projects');
-                    if (el) {
-                      e.preventDefault();
-                      el.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
-                  className="flex items-center justify-center w-full sm:w-auto bg-white/5 border border-slate-700 hover:border-slate-500 hover:bg-white/10 text-white font-bold text-sm tracking-wide px-8 py-3.5 rounded-full hover:-translate-y-0.5 transition-all duration-300"
+                <a
+                  href={applyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 rounded-2xl bg-white/15 border border-white/25 hover:bg-white/25 text-white font-semibold px-6 py-4 text-center text-sm sm:text-base transition-all hover:scale-[1.02] active:scale-[0.98] backdrop-blur-sm shadow-sm"
                 >
-                  View Portfolio
+                  <span>Apply Internship</span>
+                  <ExternalLink className="size-4.5 text-blue-100" />
                 </a>
               </div>
             </div>

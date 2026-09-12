@@ -1,10 +1,22 @@
-import React from "react";
-import { Users, MessageSquare, TrendingUp, CheckCircle, ArrowUpRight } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Users, MessageSquare, TrendingUp, CheckCircle, ArrowUpRight, GraduationCap, Link2, ExternalLink, Sparkles } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { fetchInternshipSettings, getCachedInternshipSettings } from "../../services/settingsData";
 
 const data = [];
 
 export default function AdminDashboard() {
+  const [internshipSettings, setInternshipSettings] = useState(getCachedInternshipSettings);
+
+  useEffect(() => {
+    fetchInternshipSettings().then((res) => {
+      if (res.success && res.data) {
+        setInternshipSettings(res.data);
+      }
+    });
+  }, []);
+
   const stats = [
     { title: "Total Leads", value: "0", icon: Users, change: "0%", isPositive: true },
     { title: "Total Messages", value: "0", icon: MessageSquare, change: "0%", isPositive: true },
@@ -14,9 +26,55 @@ export default function AdminDashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
-        <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back. Here's what's happening today.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Dashboard</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back. Here's what's happening today.</p>
+        </div>
+
+        <Link
+          to="/admin/internship-settings"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all hover:scale-[1.02]"
+        >
+          <Link2 className="size-4" />
+          <span>Change Internship Apply Link</span>
+        </Link>
+      </div>
+
+      {/* 1-Month Virtual Internship Apply Link Quick Widget */}
+      <div className="rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/15 flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
+        <div className="space-y-1 relative z-10 max-w-2xl">
+          <span className="text-xs font-bold text-blue-200 uppercase tracking-wider">
+            1-Month Virtual Internship
+          </span>
+          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">
+            Current Batch Google Form Link
+          </h2>
+          <p className="text-xs text-blue-100 font-mono break-all line-clamp-1 bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">
+            {internshipSettings.applyUrl || "https://forms.gle/..."}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 shrink-0 relative z-10">
+          {internshipSettings.applyUrl && (
+            <a
+              href={internshipSettings.applyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/25 transition-colors"
+            >
+              <span>Test Link</span>
+              <ExternalLink className="size-3.5" />
+            </a>
+          )}
+          <Link
+            to="/admin/internship-settings"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white text-indigo-700 hover:bg-blue-50 text-xs font-extrabold shadow-sm transition-all hover:scale-105"
+          >
+            <span>Change Apply Link</span>
+            <ArrowUpRight className="size-4" />
+          </Link>
+        </div>
       </div>
 
       {/* Stats Grid */}

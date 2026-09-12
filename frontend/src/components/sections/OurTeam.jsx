@@ -1,13 +1,10 @@
 import React, { useRef, useState } from 'react';
 import sakshiImg from '../../assets/images/SakshiMalik.jpeg';
-import divyaImg from '../../assets/images/DivyaVarma.jpeg';
 
 const teamMembers = [
   { name: 'Manish Gupta', role: 'Founder', img: '/images/founder_left.jpg', customClass: 'scale-[1.2] group-hover:scale-[1.3]' },
   { name: 'Sakshi Malik', role: 'Sales Executive', img: sakshiImg, objectPosition: 'center 25%' },
   { name: 'Satyam Singh', role: 'Lead Generation Executive', img: '/images/satyam_singh.jpg', customClass: 'origin-top scale-[1.1] group-hover:scale-[1.2]' },
-  { name: 'Himanshu', role: 'Fullstack Developer', img: '/images/Himanshu-passport1.JPEG' },
-  { name: 'Divya Varma', role: 'Sales Executive', img: divyaImg, objectPosition: 'center 25%' },
 ];
 
 const OurTeam = () => {
@@ -52,7 +49,7 @@ const OurTeam = () => {
           <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#2563EB] bg-[#2563EB]/5 px-6 py-2 rounded-full mb-6 border border-[#2563EB]/15">
             ● Our Team
           </span>
-          <h2 className="text-4xl sm:text-5xl font-[700] tracking-tight text-[#0F0F0F]">
+          <h2 className="text-3xl md:text-4xl lg:text-[44px] font-medium tracking-tight text-[#1E293B]">
             Team Behind <span className="text-[#2563EB]">InfozaTech</span>
           </h2>
         </div>
@@ -62,7 +59,7 @@ const OurTeam = () => {
           <div 
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex md:grid md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-6 md:px-0 pb-4 md:pb-0"
+            className="flex md:grid md:grid-cols-3 max-w-5xl mx-auto gap-5 md:gap-8 overflow-x-auto md:overflow-visible snap-x snap-mandatory px-6 md:px-0 pb-4 md:pb-0"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {teamMembers.map((member, index) => (

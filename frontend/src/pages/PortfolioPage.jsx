@@ -58,7 +58,7 @@ const PortfolioPage = () => {
       category: 'fintech',
       tags: ['FinTech', 'Trading Dashboard'],
       imageUrl: zerodhaImage,
-      link: "https://zerodha-himanshu.onrender.com/"
+      link: "https://zerodha.com/"
     },
   ];
 

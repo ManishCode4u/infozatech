@@ -2,12 +2,22 @@ import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ChevronDown, Menu, X, ArrowRight, Home } from "lucide-react";
 import logo from "../../assets/images/logo/infozatech-logo.png";
+import { getCachedInternshipSettings } from "../../services/settingsData";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [applyUrl, setApplyUrl] = useState(() => getCachedInternshipSettings().applyUrl);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setApplyUrl(getCachedInternshipSettings().applyUrl);
+    };
+    window.addEventListener('internship_settings_updated', handleUpdate);
+    return () => window.removeEventListener('internship_settings_updated', handleUpdate);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -83,10 +93,12 @@ const Navbar = () => {
           {/* Right Side: Desktop Actions */}
           <div className="flex items-center">
             <a
-              href="tel:+919155596712"
+              href={applyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-6 py-2.5 rounded-full text-[14px] font-bold transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] flex items-center justify-center gap-1.5"
             >
-              Book a Call <ArrowRight className="w-3.5 h-3.5" />
+              Apply Now <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
         </div>
@@ -98,50 +110,50 @@ const Navbar = () => {
       <header className="md:hidden fixed top-0 inset-x-0 z-50 w-full bg-transparent font-sans px-4 mt-4">
         <div className="max-w-[1280px] w-full mx-auto bg-[#111111] h-[72px] rounded-full pl-[28px] pr-[16px] flex items-center justify-between shadow-[0_12px_40px_rgba(0,0,0,0.3)]">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2">
             <img 
               src={logo} 
               alt="InfozaTech Logo" 
-              className="h-[38px] w-auto object-contain brightness-0 invert opacity-90" 
+              className="h-[36px] w-auto object-contain" 
             />
           </Link>
 
-          {/* Original Mobile Hamburger Toggle (Lime Circle) */}
+          {/* Right Hamburger */}
           <button
             onClick={() => setOpen(!open)}
-            className="w-10 h-10 rounded-full bg-[#DFFF00] flex items-center justify-center text-slate-950 focus:outline-none shadow-sm hover:scale-105 active:scale-95 transition-transform"
-            aria-label="Toggle Menu"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-slate-900 border border-slate-800 focus:outline-hidden"
+            aria-label="Toggle menu"
           >
-            {open ? <X className="w-5 h-5 stroke-[2.5]" /> : <Menu className="w-5 h-5 stroke-[2.5]" />}
+            {open ? <X className="w-5 h-5 text-white" /> : <Menu className="w-5 h-5 text-white" />}
           </button>
         </div>
       </header>
 
-      {/* Mobile Drawer Backdrop */}
+      {/* Mobile Backdrop & Drawer */}
       {open && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[1005] md:hidden"
           onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 md:hidden"
         />
       )}
 
-      {/* Mobile Drawer Menu (Original Dark Theme Drawer) */}
       <div 
-        className={`fixed top-0 right-0 bottom-0 w-[260px] h-screen bg-slate-950 border-l border-slate-900 z-[1010] shadow-2xl py-6 px-5 flex flex-col gap-4 md:hidden transition-transform duration-300 ease-in-out ${
-          open ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed inset-y-0 right-0 z-50 w-[280px] bg-black text-white p-6 shadow-2xl flex flex-col justify-between transition-transform duration-300 md:hidden ${
+          open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        {/* Drawer Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-slate-900 mb-2">
-          <img 
-            src={logo} 
-            alt="InfozaTech Logo" 
-            className="h-[32px] w-auto object-contain brightness-0 invert opacity-90" 
-          />
+        {/* Drawer Header with Logo & Close */}
+        <div className="flex items-center justify-between pb-6 border-b border-slate-900">
+          <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2">
+            <img 
+              src={logo} 
+              alt="InfozaTech Logo" 
+              className="h-[32px] w-auto object-contain" 
+            />
+          </Link>
           <button 
-            onClick={() => setOpen(false)}
-            className="w-7 h-7 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-white focus:outline-none"
-            aria-label="Close Menu"
+            onClick={() => setOpen(false)} 
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-white bg-slate-900"
           >
             <X className="w-4 h-4" />
           </button>
