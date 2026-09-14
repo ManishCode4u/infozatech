@@ -82,14 +82,14 @@ export default function AdminDashboard() {
             Current Batch Google Form Link
           </h2>
           <p className="text-xs text-blue-100 font-mono break-all line-clamp-1 bg-black/20 px-3 py-1.5 rounded-lg border border-white/10">
-            {internshipSettings.applyUrl || "https://forms.gle/..."}
+            {internshipSettings?.applyUrl || applyUrl || "https://forms.gle/..."}
           </p>
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0 relative z-10">
-          {internshipSettings.applyUrl && (
+          {(internshipSettings?.applyUrl || applyUrl) && (
             <a
-              href={internshipSettings.applyUrl}
+              href={internshipSettings?.applyUrl || applyUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold border border-white/25 transition-colors"

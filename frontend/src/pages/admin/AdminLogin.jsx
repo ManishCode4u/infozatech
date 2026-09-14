@@ -23,16 +23,23 @@ export default function AdminLogin() {
     // Simulate API delay for polish
     setTimeout(() => {
       const activePassword = localStorage.getItem('admin_custom_password') || 'Goa@627830';
-      const validEmail = 'manish12643@gmail.com';
+      const savedEmail = localStorage.getItem('admin_profile_email') || 'manish12643@gmail.com';
+      const inputEmail = email.trim().toLowerCase();
 
-      if (email.trim().toLowerCase() === validEmail.toLowerCase() && password === activePassword) {
+      const isValidEmail = 
+        inputEmail === 'manish12643@gmail.com' ||
+        inputEmail === 'admin@infozatech.com' ||
+        inputEmail === 'admin@buildoracraft.in' ||
+        inputEmail === savedEmail.toLowerCase();
+
+      if (isValidEmail && password === activePassword) {
         localStorage.setItem('admin_authenticated', 'true');
         navigate('/admin');
       } else {
         setError('Invalid email or password');
         setIsLoading(false);
       }
-    }, 800);
+    }, 600);
   };
 
   return (
