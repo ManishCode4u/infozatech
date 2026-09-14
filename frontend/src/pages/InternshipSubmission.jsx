@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  fetchInternshipSettings,
-  getCachedInternshipSettings
-} from '../services/settingsData';
+import { useInternshipSettings } from '../services/settingsData';
 import {
   Send,
   CheckCircle2,
@@ -20,21 +17,11 @@ import {
 } from 'lucide-react';
 
 export default function InternshipSubmission() {
-  const [settings, setSettings] = useState(getCachedInternshipSettings);
+  const { submissionUrl } = useInternshipSettings();
   const [confirmedTasks, setConfirmedTasks] = useState(false);
   const [confirmedGithub, setConfirmedGithub] = useState(false);
   const [confirmedLinkedin, setConfirmedLinkedin] = useState(false);
   const [confirmedAccuracy, setConfirmedAccuracy] = useState(false);
-
-  useEffect(() => {
-    fetchInternshipSettings().then((res) => {
-      if (res.success && res.data) {
-        setSettings(res.data);
-      }
-    });
-  }, []);
-
-  const submissionUrl = settings?.submissionUrl || "https://forms.gle/oS3KLgW8nnPpxKXA6";
 
   // Master confirmation
   const allPrerequisitesChecked =

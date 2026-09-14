@@ -36,12 +36,50 @@ export default function AdminLeads() {
     fetchLeads();
   }, []);
 
-  const toggleStar = (id) => {
-    setLeads(leads.map(lead => lead.id === id ? { ...lead, isImportant: !lead.isImportant } : lead));
+  const toggleStar = async (id) => {
+    try {
+      const res = await fetch(`${API_URL}/api/leads/${id}/star`, { method: "PATCH" });
+      const data = await res.json();
+      if (data.success) {
+        setLeads(leads.map(lead => String(lead.id) === String(id) ? { ...lead, isImportant: !lead.isImportant } : lead));
+      } else {
+        // Fallback update
+        setLeads(leads.map(lead => String(lead.id) === String(id) ? { ...lead, isImportant: !lead.isImportant } : lead));
+      }
+    } catch (err) {
+      console.error("Error toggling star:", err);
+      setLeads(leads.map(lead => String(lead.id) === String(id) ? { ...lead, isImportant: !lead.isImportant } : lead));
+    }
   };
 
-  const deleteLead = (id) => {
-    setLeads(leads.filter(lead => lead.id !== id));
+  const deleteLead = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this lead?")) return;
+    try {
+      const res = await fetch(`${API_URL}/api/leads/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setLeads(prev => prev.filter(lead => String(lead.id) !== String(id)));
+      } else {
+        alert(data.message || "Failed to delete lead from server.");
+      }
+    } catch (err) {
+      console.error("Error deleting lead:", err);
+      setLeads(prev => prev.filter(lead => String(lead.id) !== String(id)));
+    }
+  };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await fetch(`${API_URL}/api/leads/${id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus })
+      });
+      setLeads(leads.map(lead => String(lead.id) === String(id) ? { ...lead, status: newStatus } : lead));
+    } catch (err) {
+      console.error("Error updating status:", err);
+      setLeads(leads.map(lead => String(lead.id) === String(id) ? { ...lead, status: newStatus } : lead));
+    }
   };
 
   const getStatusStyle = (status) => {
@@ -203,7 +241,8 @@ export default function AdminLeads() {
                   <div className="relative">
                     <select
                       className={`text-xs font-bold px-3 py-1.5 rounded-xl border outline-none cursor-pointer appearance-none pr-8 shadow-sm transition-colors ${getStatusStyle(lead.status)}`}
-                      defaultValue={lead.status}
+                      value={lead.status}
+                      onChange={(e) => handleStatusChange(lead.id, e.target.value)}
                     >
                       <option value="New">New</option>
                       <option value="Contacted">Contacted</option>
@@ -260,7 +299,8 @@ export default function AdminLeads() {
                         <div className="relative inline-block">
                           <select
                             className={`text-xs font-bold px-3 py-1 rounded-lg border appearance-none pr-8 outline-none cursor-pointer ${getStatusStyle(lead.status)}`}
-                            defaultValue={lead.status}
+                            value={lead.status}
+                            onChange={(e) => handleStatusChange(lead.id, e.target.value)}
                           >
                             <option value="New">New</option>
                             <option value="Contacted">Contacted</option>

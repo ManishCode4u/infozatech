@@ -4,7 +4,7 @@ import { Check, X, ArrowRight, Award, Users, Cpu, ShieldCheck, Sparkles, Externa
 import ScrollReveal from '../ui/scroll-reveal';
 import logoImg from '../../assets/images/logo/infozatech-logo.png';
 import { useNavigate } from 'react-router-dom';
-import { getInternshipSettings } from '../../services/settingsData';
+import { useInternshipSettings } from '../../services/settingsData';
 
 // Animated Counter Component
 const AnimatedCounter = ({ value, duration = 1.5 }) => {
@@ -24,29 +24,27 @@ const AnimatedCounter = ({ value, duration = 1.5 }) => {
 
     let start = 0;
     const end = numericPart;
-    const totalFrames = Math.min(Math.floor(duration * 60), 100);
+    const totalFrames = Math.round(duration * 60);
     let frame = 0;
 
-    const counter = setInterval(() => {
+    const timer = setInterval(() => {
       frame++;
       const progress = frame / totalFrames;
-      // Ease out quad
-      const easeProgress = progress * (2 - progress);
-      const currentCount = Math.floor(easeProgress * end);
-      
-      setCount(currentCount);
+      const easeOutQuad = 1 - (1 - progress) * (1 - progress);
+      const current = Math.round(start + (end - start) * easeOutQuad);
+
+      setCount(current);
 
       if (frame >= totalFrames) {
-        clearInterval(counter);
+        clearInterval(timer);
         setCount(end);
       }
     }, 1000 / 60);
 
-    return () => clearInterval(counter);
+    return () => clearInterval(timer);
   }, [isInView, value, duration]);
 
-  const numericMatch = String(value).match(/^\d+/);
-  const nonNumericPart = numericMatch ? String(value).substring(numericMatch[0].length) : String(value);
+  const nonNumericPart = String(value).replace(/^\d+/, '');
 
   return (
     <span ref={ref} className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
@@ -58,15 +56,7 @@ const AnimatedCounter = ({ value, duration = 1.5 }) => {
 
 const WhyFounders = () => {
   const navigate = useNavigate();
-  const [applyUrl, setApplyUrl] = useState(() => getInternshipSettings().applyUrl);
-
-  useEffect(() => {
-    const handleUpdate = () => {
-      setApplyUrl(getInternshipSettings().applyUrl);
-    };
-    window.addEventListener('internship_settings_updated', handleUpdate);
-    return () => window.removeEventListener('internship_settings_updated', handleUpdate);
-  }, []);
+  const { applyUrl } = useInternshipSettings();
 
   const handleContactClick = (e) => {
     e.preventDefault();

@@ -1,27 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Users, MessageSquare, TrendingUp, CheckCircle, ArrowUpRight, GraduationCap, Link2, ExternalLink, Sparkles } from "lucide-react";
+import { Users, MessageSquare, TrendingUp, CheckCircle, ArrowUpRight, GraduationCap, Link2, ExternalLink, Sparkles, Briefcase, FileText, RefreshCw } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { fetchInternshipSettings, getCachedInternshipSettings } from "../../services/settingsData";
-
-const data = [];
+import { useInternshipSettings } from "../../services/settingsData";
+import API_URL from "../../config";
 
 export default function AdminDashboard() {
-  const [internshipSettings, setInternshipSettings] = useState(getCachedInternshipSettings);
+  const { applyUrl, settings: internshipSettings } = useInternshipSettings();
+  const [statsData, setStatsData] = useState({
+    totalLeads: 0,
+    totalContacts: 0,
+    totalApplications: 0,
+    totalCareers: 0,
+    todayLeads: 0,
+    convertedLeads: 0,
+  });
+  const [activityData, setActivityData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_URL}/api/stats/dashboard`);
+      const data = await res.json();
+      if (data.success && data.data) {
+        setStatsData(data.data);
+      }
+    } catch (err) {
+      console.error("Error fetching dashboard stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchInternshipSettings().then((res) => {
-      if (res.success && res.data) {
-        setInternshipSettings(res.data);
-      }
-    });
+    fetchDashboardStats();
   }, []);
 
   const stats = [
-    { title: "Total Leads", value: "0", icon: Users, change: "0%", isPositive: true },
-    { title: "Total Messages", value: "0", icon: MessageSquare, change: "0%", isPositive: true },
-    { title: "Today Leads", value: "0", icon: TrendingUp, change: "0%", isPositive: true },
-    { title: "Converted", value: "0%", icon: CheckCircle, change: "0%", isPositive: true },
+    { title: "Total Leads", value: String(statsData.totalLeads || 0), icon: Users, change: statsData.todayLeads > 0 ? `+${statsData.todayLeads} today` : "Live", isPositive: true },
+    { title: "Total Messages", value: String(statsData.totalContacts || 0), icon: MessageSquare, change: "Direct", isPositive: true },
+    { title: "Applications", value: String(statsData.totalApplications || 0), icon: FileText, change: "Candidates", isPositive: true },
+    { title: "Job Openings", value: String(statsData.totalCareers || 0), icon: Briefcase, change: "Active", isPositive: true },
   ];
 
   return (
@@ -32,13 +52,24 @@ export default function AdminDashboard() {
           <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome back. Here's what's happening today.</p>
         </div>
 
-        <Link
-          to="/admin/internship-settings"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all hover:scale-[1.02]"
-        >
-          <Link2 className="size-4" />
-          <span>Change Internship Apply Link</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={fetchDashboardStats}
+            disabled={loading}
+            className="p-2.5 border border-gray-200 dark:border-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-xl transition-colors bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-center"
+            title="Refresh Dashboard Stats"
+          >
+            <RefreshCw size={17} className={loading ? "animate-spin" : ""} />
+          </button>
+
+          <Link
+            to="/admin/internship-settings"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/20 transition-all hover:scale-[1.02]"
+          >
+            <Link2 className="size-4" />
+            <span>Change Internship Apply Link</span>
+          </Link>
+        </div>
       </div>
 
       {/* 1-Month Virtual Internship Apply Link Quick Widget */}

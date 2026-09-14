@@ -1,23 +1,15 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ChevronDown, Menu, X, ArrowRight, Home } from "lucide-react";
+import { ChevronDown, Menu, X, ArrowRight, Home, Sparkles } from "lucide-react";
 import logo from "../../assets/images/logo/infozatech-logo.png";
-import { getCachedInternshipSettings } from "../../services/settingsData";
+import { useInternshipSettings } from "../../services/settingsData";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [applyUrl, setApplyUrl] = useState(() => getCachedInternshipSettings().applyUrl);
+  const { applyUrl } = useInternshipSettings();
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleUpdate = () => {
-      setApplyUrl(getCachedInternshipSettings().applyUrl);
-    };
-    window.addEventListener('internship_settings_updated', handleUpdate);
-    return () => window.removeEventListener('internship_settings_updated', handleUpdate);
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -200,12 +192,22 @@ const Navbar = () => {
           );
         })}
         
-        {/* Book a Call button inside Drawer */}
-        <div className="flex items-center justify-center pt-6 mt-auto">
+        {/* Action Buttons inside Drawer */}
+        <div className="flex flex-col gap-2.5 pt-6 mt-auto">
+          <a
+            href={applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpen(false)}
+            className="bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-5 py-3 rounded-full text-sm font-bold w-full text-center shadow-md shadow-blue-500/20 transition-all duration-200 flex items-center justify-center gap-1.5"
+          >
+            <Sparkles className="w-4 h-4 text-blue-200" />
+            Apply for Internship
+          </a>
           <a
             href="tel:+919155596712"
             onClick={() => setOpen(false)}
-            className="bg-[#2563EB] text-white hover:bg-[#1d4ed8] px-5 py-3 rounded-full text-sm font-bold w-full text-center shadow-md shadow-blue-500/20 transition-all duration-200"
+            className="bg-slate-900 text-white hover:bg-slate-800 border border-slate-800 px-5 py-2.5 rounded-full text-xs font-semibold w-full text-center transition-all duration-200"
           >
             Book a Call
           </a>

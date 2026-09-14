@@ -1,12 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Search, Bell, Menu, Moon, Sun, User, LogOut, KeyRound, X, CheckCircle2, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail } from "lucide-react";
+import { Search, Bell, Menu, Moon, Sun, User, LogOut, KeyRound, X, CheckCircle2, AlertTriangle, Eye, EyeOff, ShieldCheck, Mail, Users, FileText, CheckCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import API_URL from "../../config";
 
 export default function Topbar({ toggleSidebar }) {
   const [isDark, setIsDark] = useState(() => {
     return localStorage.getItem("admin_theme") === "dark" || false;
   });
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
@@ -28,6 +31,85 @@ export default function Topbar({ toggleSidebar }) {
   const [adminEmail, setAdminEmail] = useState(() => {
     return localStorage.getItem("admin_profile_email") || "manish12643@gmail.com";
   });
+
+  const formatTimeAgo = (isoString) => {
+    if (!isoString) return "";
+    const date = new Date(isoString);
+    const now = new Date();
+    const diffSec = Math.floor((now - date) / 1000);
+
+    if (diffSec < 60) return "Just now";
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHours = Math.floor(diffMin / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+
+    return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
+  const fetchNotifications = async () => {
+    try {
+      setLoadingNotifications(true);
+      const [leadsRes, contactsRes, appsRes] = await Promise.all([
+        fetch(`${API_URL}/api/leads`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_URL}/api/contacts`).then((r) => r.json()).catch(() => ({ data: [] })),
+        fetch(`${API_URL}/api/applications`).then((r) => r.json()).catch(() => ({ data: [] })),
+      ]);
+
+      const items = [];
+      if (leadsRes && Array.isArray(leadsRes.data)) {
+        leadsRes.data.forEach((l) => {
+          items.push({
+            id: "lead-" + l.id,
+            type: "lead",
+            title: "New Newsletter Lead",
+            description: l.email,
+            time: l.createdAt,
+            link: "/admin/leads",
+          });
+        });
+      }
+
+      if (contactsRes && Array.isArray(contactsRes.data)) {
+        contactsRes.data.forEach((c) => {
+          items.push({
+            id: "contact-" + c.id,
+            type: "contact",
+            title: `Message from ${c.name || "Visitor"}`,
+            description: c.message || c.subject || c.email,
+            time: c.createdAt,
+            link: "/admin/messages",
+          });
+        });
+      }
+
+      if (appsRes && Array.isArray(appsRes.data)) {
+        appsRes.data.forEach((a) => {
+          items.push({
+            id: "app-" + a.id,
+            type: "application",
+            title: `Job Application: ${a.name}`,
+            description: `${a.role || "Candidate"} • ${a.location || "Remote"}`,
+            time: a.createdAt,
+            link: "/admin/applications",
+          });
+        });
+      }
+
+      items.sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0));
+      setNotifications(items.slice(0, 8));
+    } catch (err) {
+      console.error("Error fetching live notifications:", err);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -140,28 +222,89 @@ export default function Topbar({ toggleSidebar }) {
           {/* Notifications Dropdown */}
           <div className="relative" ref={notificationsRef}>
             <button 
-              onClick={() => setShowNotifications(!showNotifications)}
+              onClick={() => {
+                if (!showNotifications) fetchNotifications();
+                setShowNotifications(!showNotifications);
+              }}
               className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded-lg transition-colors relative"
+              title="Notifications"
             >
               <Bell size={18} />
-              <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-zinc-900"></span>
+              {notifications.length > 0 && (
+                <span className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-zinc-900"></span>
+              )}
             </button>
             
             {showNotifications && (
-              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-zinc-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="px-4 py-2 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-900/50">
-                  <span className="font-bold text-gray-900 dark:text-white text-sm">Notifications</span>
-                  <span className="text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 px-2 py-0.5 rounded-full font-medium">2 New</span>
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] border border-gray-100 dark:border-zinc-800 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200 overflow-hidden">
+                <div className="px-4 py-2.5 border-b border-gray-100 dark:border-zinc-800 flex justify-between items-center bg-gray-50/50 dark:bg-zinc-900/50">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-900 dark:text-white text-sm">Notifications</span>
+                    {notifications.length > 0 && (
+                      <span className="text-[11px] bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">
+                        {notifications.length} New
+                      </span>
+                    )}
+                  </div>
+                  <button 
+                    onClick={fetchNotifications}
+                    className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors font-medium"
+                  >
+                    Refresh
+                  </button>
                 </div>
-                <div className="max-h-64 overflow-y-auto">
-                  <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 cursor-pointer border-b border-gray-50 dark:border-zinc-800/50 transition-colors">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-200">New lead: Anna Smith</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">2 minutes ago</p>
-                  </div>
-                  <div className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/50 cursor-pointer transition-colors">
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-200">New message from David</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">1 hour ago</p>
-                  </div>
+
+                <div className="max-h-80 overflow-y-auto divide-y divide-gray-100/60 dark:divide-zinc-800/60">
+                  {loadingNotifications ? (
+                    <div className="p-8 text-center text-gray-400 text-xs">
+                      <div className="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                      <span>Updating notifications...</span>
+                    </div>
+                  ) : notifications.length > 0 ? (
+                    notifications.map((item) => {
+                      const iconBg = item.type === "lead" 
+                        ? "bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"
+                        : item.type === "application"
+                        ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400"
+                        : "bg-purple-50 text-purple-600 dark:bg-purple-950/50 dark:text-purple-400";
+                      
+                      const IconComp = item.type === "lead" ? Users : item.type === "application" ? FileText : Mail;
+
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => {
+                            setShowNotifications(false);
+                            navigate(item.link);
+                          }}
+                          className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-zinc-800/60 cursor-pointer transition-colors flex items-start gap-3 group"
+                        >
+                          <div className={`p-2 rounded-xl shrink-0 mt-0.5 ${iconBg}`}>
+                            <IconComp size={15} />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className="text-xs font-bold text-gray-900 dark:text-white truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                {item.title}
+                              </p>
+                              <span className="text-[10px] text-gray-400 dark:text-zinc-500 shrink-0 font-medium">
+                                {formatTimeAgo(item.time)}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="p-8 text-center text-gray-400 dark:text-gray-500">
+                      <CheckCheck size={28} className="mx-auto mb-2 opacity-30 text-emerald-500" />
+                      <p className="text-xs font-bold text-gray-700 dark:text-gray-300">No new notifications</p>
+                      <p className="text-[11px] text-gray-400 dark:text-zinc-500 mt-0.5">You're all caught up with latest activity.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

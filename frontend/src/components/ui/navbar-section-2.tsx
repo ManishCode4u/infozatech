@@ -31,7 +31,7 @@ import {
   Scale,
 } from "lucide-react";
 import logo from "../../assets/images/logo/infozatech-logo.png";
-import { getCachedInternshipSettings } from "../../services/settingsData";
+import { useInternshipSettings } from "../../services/settingsData";
 
 type NavItem = {
   label: string;
@@ -79,15 +79,7 @@ const serviceSubItems = [
 export function NavbarTwoHeader() {
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [applyUrl, setApplyUrl] = useState(() => getCachedInternshipSettings().applyUrl);
-
-  useEffect(() => {
-    const handleUpdate = () => {
-      setApplyUrl(getCachedInternshipSettings().applyUrl);
-    };
-    window.addEventListener('internship_settings_updated', handleUpdate);
-    return () => window.removeEventListener('internship_settings_updated', handleUpdate);
-  }, []);
+  const { applyUrl } = useInternshipSettings();
 
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({
     services: false,
@@ -533,14 +525,24 @@ export function NavbarTwoHeader() {
               </div>
 
               {/* Drawer Footer */}
-              <div className="shrink-0 border-t border-slate-100 p-4 bg-slate-50/80 backdrop-blur-md">
+              <div className="shrink-0 border-t border-slate-100 p-4 bg-slate-50/80 backdrop-blur-md space-y-2.5">
+                <a
+                  href={applyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={closeAll}
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 hover:bg-blue-700 py-3.5 text-center text-[15px] font-bold text-white shadow-[0_4px_16px_rgba(37,99,235,0.3)] transition-all hover:scale-[1.01] active:scale-[0.98]"
+                >
+                  <Sparkles className="size-4 text-blue-200" />
+                  <span>Apply for Internship</span>
+                </a>
                 <a
                   href="tel:+919155596712"
                   onClick={closeAll}
-                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 hover:bg-blue-700 py-3.5 text-center text-[15px] font-semibold text-white shadow-[0_4px_16px_rgba(37,99,235,0.3)] transition-all hover:scale-[1.01] active:scale-[0.98]"
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-white hover:bg-slate-100 border border-slate-200 py-3 text-center text-[14px] font-semibold text-slate-800 transition-all hover:scale-[1.01] active:scale-[0.98]"
                 >
                   <span>Book a Call</span>
-                  <ArrowUpRight className="size-4.5 stroke-[2.2]" />
+                  <ArrowUpRight className="size-4 stroke-[2.2]" />
                 </a>
               </div>
             </motion.aside>

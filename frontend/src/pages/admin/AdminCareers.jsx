@@ -18,14 +18,19 @@ import {
   Users
 } from "lucide-react";
 import {
+  fetchCareers,
   getCareers,
   saveCareers,
+  createCareerJob,
+  updateCareerJob,
+  deleteCareerJob,
   resetCareersToDefault,
   getIconComponent,
 } from "../../services/careersData";
 
 export default function AdminCareers() {
   const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState(null);
   const [saveStatus, setSaveStatus] = useState("");
@@ -41,8 +46,19 @@ export default function AdminCareers() {
     bulletsText: "",
   });
 
+  const loadData = async () => {
+    setLoading(true);
+    const res = await fetchCareers();
+    if (res.success && Array.isArray(res.data)) {
+      setJobs(res.data);
+    } else {
+      setJobs(getCareers());
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    setJobs(getCareers());
+    loadData();
   }, []);
 
   const openAddModal = () => {
@@ -75,7 +91,7 @@ export default function AdminCareers() {
     setIsModalOpen(true);
   };
 
-  const handleSaveJob = (e) => {
+  const handleSaveJob = async (e) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
 
@@ -105,40 +121,32 @@ export default function AdminCareers() {
       bullets: bulletsArray.length > 0 ? bulletsArray : ["Key responsibilities and skills."],
     };
 
-    let newJobsList;
     if (editingJob) {
-      newJobsList = jobs.map((j) => (j.id === editingJob.id ? updatedJob : j));
+      await updateCareerJob(editingJob.id, updatedJob);
     } else {
-      // Put featured / co-founder roles at the very top
-      if (updatedJob.isFeatured) {
-        newJobsList = [updatedJob, ...jobs];
-      } else {
-        newJobsList = [...jobs, updatedJob];
-      }
+      await createCareerJob(updatedJob);
     }
 
-    setJobs(newJobsList);
-    saveCareers(newJobsList);
+    await loadData();
     setIsModalOpen(false);
     showNotice("Job opening saved successfully! Changes are live on the website.");
   };
 
-  const handleDeleteJob = (id) => {
+  const handleDeleteJob = async (id) => {
     if (!window.confirm("Are you sure you want to remove this job opening?")) return;
-    const filtered = jobs.filter((j) => j.id !== id);
-    setJobs(filtered);
-    saveCareers(filtered);
+    await deleteCareerJob(id);
+    setJobs((prev) => prev.filter((j) => String(j.id) !== String(id)));
     showNotice("Job opening removed.");
   };
 
-  const handleResetDefaults = () => {
+  const handleResetDefaults = async () => {
     if (
       !window.confirm(
         "Reset all career listings back to standard default openings (including Co-Founder role)?"
       )
     )
       return;
-    const defaults = resetCareersToDefault();
+    const defaults = await resetCareersToDefault();
     setJobs(defaults);
     showNotice("Career openings reset to defaults.");
   };
@@ -251,78 +259,91 @@ export default function AdminCareers() {
         </div>
 
         <div className="divide-y divide-gray-100 dark:divide-zinc-800">
-          {jobs.map((job, idx) => {
-            const IconComp = getIconComponent(job.iconName);
-            const isFeatured = job.isFeatured || job.id === "cofounder";
+          {loading ? (
+            <div className="p-12 text-center text-gray-500 dark:text-gray-400">
+              <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+              <p className="text-sm font-medium">Loading career openings...</p>
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="p-12 text-center text-gray-400 dark:text-gray-500">
+              <Briefcase size={36} className="mx-auto mb-3 opacity-25" />
+              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">No active career openings</p>
+              <p className="text-xs mt-1">All openings have been removed. Click "Add Job Opening" or "Reset to Default Jobs" to populate.</p>
+            </div>
+          ) : (
+            jobs.map((job, idx) => {
+              const IconComp = getIconComponent(job.iconName);
+              const isFeatured = job.isFeatured || job.id === "cofounder";
 
-            return (
-              <div
-                key={job.id}
-                className={`p-5 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 ${
-                  isFeatured ? "bg-amber-50/30 dark:bg-amber-950/10" : "hover:bg-gray-50/60 dark:hover:bg-zinc-800/30"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`size-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs ${
-                      isFeatured ? "bg-gradient-to-br from-amber-500 to-rose-600" : "bg-gradient-to-br from-blue-500 to-indigo-600"
-                    }`}
-                  >
-                    <IconComp size={20} />
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                        {job.title}
-                      </h3>
-                      {isFeatured && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-[10px] font-extrabold text-amber-800 dark:text-amber-300 px-2 py-0.5 uppercase tracking-wider">
-                          <Crown size={11} /> Top Featured / Co-Founder
+              return (
+                <div
+                  key={job.id}
+                  className={`p-5 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                    isFeatured ? "bg-amber-50/30 dark:bg-amber-950/10" : "hover:bg-gray-50/60 dark:hover:bg-zinc-800/30"
+                  }`}
+                >
+                  <div className="flex items-start gap-4">
+                    <div
+                      className={`size-11 rounded-xl flex items-center justify-center text-white shrink-0 shadow-xs ${
+                        isFeatured ? "bg-gradient-to-br from-amber-500 to-rose-600" : "bg-gradient-to-br from-blue-500 to-indigo-600"
+                      }`}
+                    >
+                      <IconComp size={20} />
+                    </div>
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                          {job.title}
+                        </h3>
+                        {isFeatured && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 dark:bg-amber-900/60 border border-amber-300 dark:border-amber-700 text-[10px] font-extrabold text-amber-800 dark:text-amber-300 px-2 py-0.5 uppercase tracking-wider">
+                            <Crown size={11} /> Top Featured / Co-Founder
+                          </span>
+                        )}
+                        <span className="rounded-md bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold text-gray-600 dark:text-gray-300">
+                          {job.badge || "Role"}
                         </span>
-                      )}
-                      <span className="rounded-md bg-gray-100 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-semibold text-gray-600 dark:text-gray-300">
-                        {job.badge || "Role"}
-                      </span>
-                    </div>
+                      </div>
 
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 max-w-2xl">
-                      {job.description}
-                    </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 max-w-2xl">
+                        {job.description}
+                      </p>
 
-                    <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-gray-400 font-medium">
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} /> {job.type}
-                      </span>
-                      <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin size={12} /> {job.location}
-                      </span>
-                      <span>•</span>
-                      <span>{(job.bullets || []).length} key requirements</span>
+                      <div className="flex flex-wrap items-center gap-3 mt-2 text-[11px] text-gray-400 font-medium">
+                        <span className="flex items-center gap-1">
+                          <Clock size={12} /> {job.type}
+                        </span>
+                        <span>•</span>
+                        <span className="flex items-center gap-1">
+                          <MapPin size={12} /> {job.location}
+                        </span>
+                        <span>•</span>
+                        <span>{(job.bullets || []).length} key requirements</span>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                  <button
-                    onClick={() => openEditModal(job)}
-                    className="p-2 rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold transition-colors flex items-center gap-1"
-                    title="Edit Opening"
-                  >
-                    <Edit size={14} />
-                    <span>Edit</span>
-                  </button>
-                  <button
-                    onClick={() => handleDeleteJob(job.id)}
-                    className="p-2 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition-colors"
-                    title="Delete Opening"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                    <button
+                      onClick={() => openEditModal(job)}
+                      className="p-2 rounded-lg border border-gray-200 dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-800 text-gray-700 dark:text-gray-300 text-xs font-semibold transition-colors flex items-center gap-1"
+                      title="Edit Opening"
+                    >
+                      <Edit size={14} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteJob(job.id)}
+                      className="p-2 rounded-lg border border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 transition-colors"
+                      title="Delete Opening"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
 

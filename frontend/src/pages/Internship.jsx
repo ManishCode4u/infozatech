@@ -1,10 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  fetchInternshipSettings,
-  getCachedInternshipSettings
-} from '../services/settingsData';
+import { useInternshipSettings } from '../services/settingsData';
 import {
   Calendar,
   CheckCircle2,
@@ -178,17 +175,7 @@ const faqs = [
 
 export default function Internship() {
   const [openFaq, setOpenFaq] = useState(null);
-  const [settings, setSettings] = useState(getCachedInternshipSettings);
-
-  useEffect(() => {
-    fetchInternshipSettings().then((res) => {
-      if (res.success && res.data) {
-        setSettings(res.data);
-      }
-    });
-  }, []);
-
-  const applyUrl = settings?.applyUrl || "https://forms.gle/SjDCcUxkjRAGpDRx6";
+  const { applyUrl } = useInternshipSettings();
 
   const toggleFaq = (index) => {
     setOpenFaq(openFaq === index ? null : index);

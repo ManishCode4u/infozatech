@@ -25,6 +25,7 @@ const APPLICATIONS_FILE = path.join(__dirname, 'applications.json');
 const VERIFICATIONS_FILE = path.join(__dirname, 'verifications.json');
 const NOTES_FILE = path.join(__dirname, 'notes.json');
 const INTERNSHIP_SETTINGS_FILE = path.join(__dirname, 'internship_settings.json');
+const CAREERS_FILE = path.join(__dirname, 'careers.json');
 
 const DEFAULT_INTERNSHIP_SETTINGS = {
   applyUrl: "https://forms.gle/SjDCcUxkjRAGpDRx6",
@@ -69,11 +70,12 @@ const writeData = (filePath, data) => {
 };
 
 // Database state loaded from files
-const contacts = readData(CONTACTS_FILE);
-const leads = readData(LEADS_FILE);
-const applications = readData(APPLICATIONS_FILE);
+let contacts = readData(CONTACTS_FILE);
+let leads = readData(LEADS_FILE);
+let applications = readData(APPLICATIONS_FILE);
 let verifications = readData(VERIFICATIONS_FILE);
 let notes = readData(NOTES_FILE);
+let careers = readData(CAREERS_FILE);
 let internshipSettings = readObjectData(INTERNSHIP_SETTINGS_FILE, DEFAULT_INTERNSHIP_SETTINGS);
 
 // Request Logger
@@ -87,8 +89,13 @@ app.get('/api/test', (req, res) => {
   res.json({ message: "API working" });
 });
 
+// ============================================================================
+// CONTACTS / MESSAGES API
+// ============================================================================
+
 // 2. GET all contacts
 app.get('/api/contacts', (req, res) => {
+  contacts = readData(CONTACTS_FILE);
   res.status(200).json({
     success: true,
     count: contacts.length,
@@ -117,19 +124,18 @@ app.post('/api/contacts', (req, res) => {
       });
     }
 
-    // Save data in memory
+    contacts = readData(CONTACTS_FILE);
     const newContact = {
       id: Date.now().toString(),
-      name,
-      email,
-      message,
+      name: name.trim(),
+      email: email.trim(),
+      message: message.trim(),
       createdAt: new Date().toISOString()
     };
     
-    contacts.push(newContact);
+    contacts.unshift(newContact);
     writeData(CONTACTS_FILE, contacts);
 
-    // Return success response
     res.status(201).json({
       success: true,
       message: "Contact saved successfully",
@@ -145,8 +151,43 @@ app.post('/api/contacts', (req, res) => {
   }
 });
 
-// 4. GET all leads
+// 4. DELETE contact
+app.delete('/api/contacts/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    contacts = readData(CONTACTS_FILE);
+    const index = contacts.findIndex(c => String(c.id) === String(id));
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Message not found"
+      });
+    }
+
+    contacts.splice(index, 1);
+    writeData(CONTACTS_FILE, contacts);
+
+    res.status(200).json({
+      success: true,
+      message: "Message deleted successfully"
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal Server Error" 
+    });
+  }
+});
+
+// ============================================================================
+// LEADS API
+// ============================================================================
+
+// 5. GET all leads
 app.get('/api/leads', (req, res) => {
+  leads = readData(LEADS_FILE);
   res.status(200).json({
     success: true,
     count: leads.length,
@@ -154,7 +195,7 @@ app.get('/api/leads', (req, res) => {
   });
 });
 
-// 5. POST new lead from popup
+// 6. POST new lead from newsletter/popup
 app.post('/api/leads', (req, res) => {
   try {
     const { email } = req.body;
@@ -167,15 +208,16 @@ app.post('/api/leads', (req, res) => {
       });
     }
 
+    leads = readData(LEADS_FILE);
     const newLead = {
       id: Date.now().toString(),
-      email,
+      email: email.trim(),
       status: "New",
       isImportant: false,
       createdAt: new Date().toISOString()
     };
     
-    leads.push(newLead);
+    leads.unshift(newLead);
     writeData(LEADS_FILE, leads);
 
     res.status(201).json({
@@ -193,8 +235,104 @@ app.post('/api/leads', (req, res) => {
   }
 });
 
-// 6. GET all applications
+// 7. DELETE lead
+app.delete('/api/leads/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    leads = readData(LEADS_FILE);
+    const index = leads.findIndex(l => String(l.id) === String(id));
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found"
+      });
+    }
+
+    leads.splice(index, 1);
+    writeData(LEADS_FILE, leads);
+
+    res.status(200).json({
+      success: true,
+      message: "Lead deleted successfully"
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal Server Error" 
+    });
+  }
+});
+
+// 8. PATCH lead star status
+app.patch('/api/leads/:id/star', (req, res) => {
+  try {
+    const { id } = req.params;
+    leads = readData(LEADS_FILE);
+    const index = leads.findIndex(l => String(l.id) === String(id));
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found"
+      });
+    }
+
+    leads[index].isImportant = !leads[index].isImportant;
+    writeData(LEADS_FILE, leads);
+
+    res.status(200).json({
+      success: true,
+      data: leads[index]
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal Server Error" 
+    });
+  }
+});
+
+// 9. PATCH lead status
+app.patch('/api/leads/:id/status', (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    leads = readData(LEADS_FILE);
+    const index = leads.findIndex(l => String(l.id) === String(id));
+
+    if (index === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found"
+      });
+    }
+
+    leads[index].status = status || leads[index].status;
+    writeData(LEADS_FILE, leads);
+
+    res.status(200).json({
+      success: true,
+      data: leads[index]
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: "Internal Server Error" 
+    });
+  }
+});
+
+// ============================================================================
+// APPLICATIONS API
+// ============================================================================
+
+// 10. GET all applications
 app.get('/api/applications', (req, res) => {
+  applications = readData(APPLICATIONS_FILE);
   res.status(200).json({
     success: true,
     count: applications.length,
@@ -202,7 +340,7 @@ app.get('/api/applications', (req, res) => {
   });
 });
 
-// 7. POST new application
+// 11. POST new application
 app.post('/api/applications', (req, res) => {
   try {
     const { name, email, contact, role, location, whyJoinUs } = req.body;
@@ -223,18 +361,20 @@ app.post('/api/applications', (req, res) => {
       });
     }
 
+    applications = readData(APPLICATIONS_FILE);
     const newApplication = {
       id: Date.now().toString(),
-      name,
-      email,
-      contact,
-      role,
-      location,
-      whyJoinUs,
+      name: name.trim(),
+      email: email.trim(),
+      contact: contact.trim(),
+      role: role.trim(),
+      location: location.trim(),
+      whyJoinUs: whyJoinUs.trim(),
+      status: "New",
       createdAt: new Date().toISOString()
     };
     
-    applications.push(newApplication);
+    applications.unshift(newApplication);
     writeData(APPLICATIONS_FILE, applications);
 
     res.status(201).json({
@@ -252,11 +392,12 @@ app.post('/api/applications', (req, res) => {
   }
 });
 
-// 8. DELETE application
+// 12. DELETE application
 app.delete('/api/applications/:id', (req, res) => {
   try {
     const { id } = req.params;
-    const index = applications.findIndex(app => app.id === id);
+    applications = readData(APPLICATIONS_FILE);
+    const index = applications.findIndex(app => String(app.id) === String(id));
 
     if (index === -1) {
       return res.status(404).json({
@@ -279,6 +420,175 @@ app.delete('/api/applications/:id', (req, res) => {
       success: false, 
       message: "Internal Server Error" 
     });
+  }
+});
+
+// ============================================================================
+// CAREERS / JOBS API
+// ============================================================================
+
+// 13. GET all careers
+app.get('/api/careers', (req, res) => {
+  careers = readData(CAREERS_FILE);
+  res.status(200).json({
+    success: true,
+    count: careers.length,
+    data: careers
+  });
+});
+
+// 14. POST create career opening
+app.post('/api/careers', (req, res) => {
+  try {
+    const job = req.body;
+    if (!job || !job.title) {
+      return res.status(400).json({ success: false, message: "Job title is required" });
+    }
+
+    careers = readData(CAREERS_FILE);
+    const newJob = {
+      id: job.id || "job-" + Date.now(),
+      title: job.title.trim(),
+      iconName: job.iconName || (job.isFeatured ? "Crown" : "Code"),
+      color: job.color || "from-blue-500 to-indigo-600",
+      bg: job.bg || "bg-blue-50/50 dark:bg-blue-950/20",
+      textColor: job.textColor || "text-blue-600 dark:text-blue-400",
+      badge: job.badge || (job.isFeatured ? "🔥 Leadership" : "Engineering"),
+      type: job.type || "Full-time",
+      location: job.location || "Patna / Remote",
+      isFeatured: Boolean(job.isFeatured),
+      description: job.description || "",
+      bullets: Array.isArray(job.bullets) && job.bullets.length > 0 ? job.bullets : ["Key requirements & skills."],
+      createdAt: new Date().toISOString()
+    };
+
+    if (newJob.isFeatured) {
+      careers.unshift(newJob);
+    } else {
+      careers.push(newJob);
+    }
+
+    writeData(CAREERS_FILE, careers);
+
+    res.status(201).json({
+      success: true,
+      message: "Job opening created successfully",
+      data: newJob
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// 15. PUT update career opening
+app.put('/api/careers/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const updated = req.body;
+    careers = readData(CAREERS_FILE);
+    const index = careers.findIndex(j => String(j.id) === String(id));
+
+    if (index === -1) {
+      return res.status(404).json({ success: false, message: "Job opening not found" });
+    }
+
+    careers[index] = {
+      ...careers[index],
+      ...updated,
+      id: careers[index].id,
+      updatedAt: new Date().toISOString()
+    };
+
+    writeData(CAREERS_FILE, careers);
+
+    res.status(200).json({
+      success: true,
+      message: "Job opening updated successfully",
+      data: careers[index]
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// 16. DELETE career opening
+app.delete('/api/careers/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    careers = readData(CAREERS_FILE);
+    const index = careers.findIndex(j => String(j.id) === String(id));
+
+    if (index === -1) {
+      return res.status(404).json({ success: false, message: "Job opening not found" });
+    }
+
+    careers.splice(index, 1);
+    writeData(CAREERS_FILE, careers);
+
+    res.status(200).json({
+      success: true,
+      message: "Job opening deleted successfully"
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// 17. POST bulk save careers (re-order, reset)
+app.post('/api/careers/bulk', (req, res) => {
+  try {
+    const { jobs } = req.body;
+    if (!Array.isArray(jobs)) {
+      return res.status(400).json({ success: false, message: "Jobs array is required" });
+    }
+
+    careers = jobs;
+    writeData(CAREERS_FILE, careers);
+
+    res.status(200).json({
+      success: true,
+      message: "Careers updated successfully",
+      data: careers
+    });
+  } catch (error) {
+    console.error("Server Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+});
+
+// 18. GET live summary dashboard stats
+app.get('/api/stats/dashboard', (req, res) => {
+  try {
+    const currentLeads = readData(LEADS_FILE);
+    const currentContacts = readData(CONTACTS_FILE);
+    const currentApplications = readData(APPLICATIONS_FILE);
+    const currentVerifications = readData(VERIFICATIONS_FILE);
+    const currentNotes = readData(NOTES_FILE);
+    const currentCareers = readData(CAREERS_FILE);
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayLeadsCount = currentLeads.filter(l => (l.createdAt || '').startsWith(todayStr)).length;
+    const convertedCount = currentLeads.filter(l => l.status === 'Converted').length;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        totalLeads: currentLeads.length,
+        totalContacts: currentContacts.length,
+        totalApplications: currentApplications.length,
+        totalVerifications: currentVerifications.length,
+        totalNotes: currentNotes.length,
+        totalCareers: currentCareers.length,
+        todayLeads: todayLeadsCount,
+        convertedLeads: convertedCount
+      }
+    });
+  } catch (error) {
+    console.error("Stats Error:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 

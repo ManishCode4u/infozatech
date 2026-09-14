@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import API_URL from "../../config";
 import { Search, Eye, X, Trash2, RefreshCw, Briefcase, Mail, Phone, MapPin, Calendar, CheckSquare, Users } from "lucide-react";
-import { getStoredApplications, deleteStoredApplication } from "../../services/applicationsData";
+import { fetchApplications, getStoredApplications, deleteStoredApplication } from "../../services/applicationsData";
 
 export default function AdminApplications() {
   const [selectedApp, setSelectedApp] = useState(null);
@@ -12,63 +12,30 @@ export default function AdminApplications() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRoleFilter, setSelectedRoleFilter] = useState("All");
 
-  const fetchApplications = async () => {
+  const loadApplications = async () => {
     setLoading(true);
     setError(null);
-
-    // 1. First load all local applications instantly
-    const localApps = getStoredApplications();
-
-    try {
-      const res = await fetch(`${API_URL}/api/applications`, { signal: AbortSignal.timeout(3000) });
-      const data = await res.json();
-      
-      if (data.success && Array.isArray(data.data)) {
-        // Merge backend apps and local apps without duplicates by id or email+createdAt
-        const combined = [...localApps];
-        data.data.forEach((backendApp) => {
-          const exists = combined.some(
-            (a) => a.id === backendApp.id || (a.email === backendApp.email && Math.abs(new Date(a.createdAt) - new Date(backendApp.createdAt)) < 5000)
-          );
-          if (!exists) {
-            combined.push(backendApp);
-          }
-        });
-        const sorted = combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        setApplications(sorted);
-      } else {
-        setApplications(localApps);
-      }
-    } catch (err) {
-      // Backend unavailable or slow: fallback seamlessly to local applications
-      setApplications(localApps);
-    } finally {
-      setLoading(false);
+    const res = await fetchApplications();
+    if (res.success && Array.isArray(res.data)) {
+      setApplications(res.data);
+    } else {
+      setError("Failed to load applications.");
     }
+    setLoading(false);
   };
 
   useEffect(() => {
-    fetchApplications();
+    loadApplications();
   }, []);
 
   const deleteApplication = async (id) => {
     if (!window.confirm("Are you sure you want to delete this application?")) return;
 
-    // 1. Delete locally
-    const updated = deleteStoredApplication(id);
-    setApplications(prev => prev.filter(app => app.id !== id));
-    if (selectedApp && selectedApp.id === id) {
+    setApplications(prev => prev.filter(app => String(app.id) !== String(id)));
+    if (selectedApp && String(selectedApp.id) === String(id)) {
       setSelectedApp(null);
     }
-
-    // 2. Also attempt backend delete
-    try {
-      fetch(`${API_URL}/api/applications/${id}`, {
-        method: "DELETE"
-      }).catch(err => console.log('Backend delete notice:', err));
-    } catch (err) {
-      console.log('Delete catch:', err);
-    }
+    await deleteStoredApplication(id);
   };
 
   // Filter application list based on search query and role filter
@@ -87,8 +54,8 @@ export default function AdminApplications() {
 
   // Calculate statistics
   const totalCount = applications.length;
-  const devCount = applications.filter(app => app.role.includes("Developer")).length;
-  const salesCount = applications.filter(app => app.role.includes("Sales") || app.role.includes("Lead")).length;
+  const devCount = applications.filter(app => (app.role || "").includes("Developer")).length;
+  const salesCount = applications.filter(app => (app.role || "").includes("Sales") || (app.role || "").includes("Lead")).length;
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-in fade-in duration-500">
@@ -103,7 +70,7 @@ export default function AdminApplications() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Refresh Button */}
           <button 
-            onClick={fetchApplications}
+            onClick={loadApplications}
             disabled={loading}
             className="p-2.5 border border-gray-200 dark:border-zinc-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-800 rounded-xl transition-colors bg-white dark:bg-zinc-900 shadow-sm flex items-center justify-center"
             title="Refresh Applications"

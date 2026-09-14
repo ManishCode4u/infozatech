@@ -24,14 +24,16 @@ import {
   GraduationCap,
   ExternalLink,
 } from 'lucide-react';
-import { getCareers, getIconComponent } from '../services/careersData';
+import { fetchCareers, getCareers, getIconComponent } from '../services/careersData';
 import { saveNewApplication } from '../services/applicationsData';
+import { useInternshipSettings } from '../services/settingsData';
 import API_URL from '../config';
 
 const Careers = () => {
   const [jobsList, setJobsList] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [modalView, setModalView] = useState('details'); // 'details' | 'form' | 'success'
+  const { applyUrl } = useInternshipSettings();
 
   // Application Form State
   const [formData, setFormData] = useState({
@@ -47,7 +49,15 @@ const Careers = () => {
   const [statusError, setStatusError] = useState('');
 
   useEffect(() => {
-    setJobsList(getCareers());
+    const loadCareers = async () => {
+      const res = await fetchCareers();
+      if (res && res.success && Array.isArray(res.data)) {
+        setJobsList(res.data);
+      } else {
+        setJobsList(getCareers());
+      }
+    };
+    loadCareers();
   }, []);
 
   // Open modal in details mode
@@ -182,10 +192,7 @@ const Careers = () => {
           {/* Two Clear Options: Internship & Jobs Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-4xl mx-auto text-left mb-10">
             {/* Option 1: Virtual Internship (1 Month) */}
-            <Link
-              to="/internship"
-              className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-6 border-2 border-blue-500/40 hover:border-blue-600 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between"
-            >
+            <div className="group relative bg-white dark:bg-zinc-900 rounded-2xl p-6 border-2 border-blue-500/40 hover:border-blue-600 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between gap-3 mb-3">
                   <div className="size-11 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center group-hover:scale-105 transition-transform">
@@ -205,14 +212,25 @@ const Careers = () => {
                 </p>
               </div>
 
-              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between">
-                <span className="text-xs font-bold text-blue-600 group-hover:text-blue-700 inline-flex items-center gap-1">
-                  <span>Explore Internship & Apply</span>
-                  <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-                </span>
-                <span className="text-[11px] text-slate-400">All Domains Available</span>
+              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-zinc-800 flex flex-wrap items-center justify-between gap-3">
+                <Link
+                  to="/internship"
+                  className="text-xs font-bold text-slate-600 dark:text-zinc-300 hover:text-blue-600 inline-flex items-center gap-1 transition-colors"
+                >
+                  <span>Explore Details</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+                <a
+                  href={applyUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm shadow-blue-500/20 transition-all hover:scale-105 active:scale-95"
+                >
+                  <span>Apply Now</span>
+                  <ExternalLink className="size-3.5" />
+                </a>
               </div>
-            </Link>
+            </div>
 
             {/* Option 2: Full-Time Jobs */}
             <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-slate-200/90 dark:border-zinc-800 shadow-sm flex flex-col justify-between">

@@ -37,8 +37,20 @@ export default function AdminMessages() {
     fetchMessages();
   }, []);
 
-  const deleteMessage = (id) => {
-    setMessages(messages.filter(msg => msg.id !== id));
+  const deleteMessage = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this message?")) return;
+    try {
+      const res = await fetch(`${API_URL}/api/contacts/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setMessages(prev => prev.filter(msg => String(msg.id) !== String(id)));
+      } else {
+        alert(data.message || "Failed to delete message from server.");
+      }
+    } catch (err) {
+      console.error("Error deleting message:", err);
+      setMessages(prev => prev.filter(msg => String(msg.id) !== String(id)));
+    }
   };
 
   return (

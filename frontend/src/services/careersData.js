@@ -1,4 +1,5 @@
 import { Code, Database, Monitor, PhoneCall, Search, Crown, Sparkles, Rocket } from 'lucide-react';
+import API_URL from '../config';
 
 export const INITIAL_JOBS = [
   {
@@ -119,15 +120,34 @@ export const INITIAL_JOBS = [
   }
 ];
 
-const STORAGE_KEY = 'infozatech_career_openings_v3';
+const STORAGE_KEY = 'infozatech_career_openings_v4';
+
+/**
+ * Fetch careers from backend API with local cache fallback
+ */
+export const fetchCareers = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/careers?t=${Date.now()}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.data)) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data.data));
+      } catch (e) {}
+      return { success: true, data: data.data };
+    }
+  } catch (err) {
+    console.error('Error fetching careers:', err);
+  }
+  return { success: true, data: getCareers(), isOffline: true };
+};
 
 export const getCareers = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
+    if (saved !== null) {
       const parsed = JSON.parse(saved);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        return parsed; // Returns empty array if user deleted all jobs!
       }
     }
   } catch (err) {
@@ -136,17 +156,87 @@ export const getCareers = () => {
   return INITIAL_JOBS;
 };
 
-export const saveCareers = (jobsList) => {
+export const saveCareers = async (jobsList) => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(jobsList));
+    // Bulk sync to backend
+    fetch(`${API_URL}/api/careers/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobs: jobsList })
+    }).catch(err => console.log('Backend bulk save careers error:', err));
   } catch (err) {
     console.error('Error saving careers to localStorage:', err);
   }
 };
 
-export const resetCareersToDefault = () => {
+export const createCareerJob = async (job) => {
   try {
-    localStorage.removeItem(STORAGE_KEY);
+    const res = await fetch(`${API_URL}/api/careers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(job)
+    });
+    const data = await res.json();
+    if (data.success && data.data) {
+      const current = getCareers();
+      const updated = data.data.isFeatured ? [data.data, ...current] : [...current, data.data];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return { success: true, data: data.data };
+    }
+    return data;
+  } catch (err) {
+    console.error('Error creating career job:', err);
+    return { success: false, message: 'Cannot connect to server.' };
+  }
+};
+
+export const updateCareerJob = async (id, job) => {
+  try {
+    const res = await fetch(`${API_URL}/api/careers/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(job)
+    });
+    const data = await res.json();
+    if (data.success && data.data) {
+      const current = getCareers();
+      const updated = current.map(j => String(j.id) === String(id) ? data.data : j);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return { success: true, data: data.data };
+    }
+    return data;
+  } catch (err) {
+    console.error('Error updating career job:', err);
+    return { success: false, message: 'Cannot connect to server.' };
+  }
+};
+
+export const deleteCareerJob = async (id) => {
+  try {
+    const current = getCareers();
+    const updated = current.filter(j => String(j.id) !== String(id));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+    fetch(`${API_URL}/api/careers/${id}`, {
+      method: 'DELETE'
+    }).catch(err => console.log('Backend delete job error:', err));
+
+    return { success: true, data: updated };
+  } catch (err) {
+    console.error('Error deleting career job:', err);
+    return { success: false };
+  }
+};
+
+export const resetCareersToDefault = async () => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_JOBS));
+    fetch(`${API_URL}/api/careers/bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jobs: INITIAL_JOBS })
+    }).catch(err => console.log('Backend reset careers error:', err));
   } catch (err) {
     console.error('Error resetting careers:', err);
   }
@@ -173,3 +263,4 @@ export const getIconComponent = (iconName) => {
       return Sparkles;
   }
 };
+

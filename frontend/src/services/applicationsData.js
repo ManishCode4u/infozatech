@@ -1,19 +1,25 @@
-const STORAGE_KEY = 'infozatech_submitted_applications_v1';
+import API_URL from "../config";
 
-// Seed initial demo/sample application if empty so admin has initial data
-const INITIAL_APPLICATIONS = [
-  {
-    id: 'app-seed-1',
-    name: 'Aakash Verma',
-    email: 'aakash.v@example.com',
-    contact: '+91 98765 12345',
-    role: 'Technical Co-Founder & Partner',
-    location: 'Patna, Bihar',
-    whyJoinUs: 'I have 5 years building scalable web apps, managing tech teams, and leading client presentations in both Hindi and English. Passionate about scaling InfozaTech to the next level.',
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    status: 'New'
+const STORAGE_KEY = 'infozatech_submitted_applications_v2';
+
+/**
+ * Fetch applications from backend API or local fallback
+ */
+export const fetchApplications = async () => {
+  try {
+    const res = await fetch(`${API_URL}/api/applications?t=${Date.now()}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.data)) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data.data));
+      } catch (e) {}
+      return { success: true, data: data.data };
+    }
+  } catch (err) {
+    console.error('Error fetching applications:', err);
   }
-];
+  return { success: true, data: getStoredApplications(), isOffline: true };
+};
 
 export const getStoredApplications = () => {
   try {
@@ -23,17 +29,14 @@ export const getStoredApplications = () => {
       if (Array.isArray(parsed)) {
         return parsed;
       }
-    } else {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_APPLICATIONS));
-      return INITIAL_APPLICATIONS;
     }
   } catch (err) {
     console.error('Error loading stored applications:', err);
   }
-  return INITIAL_APPLICATIONS;
+  return [];
 };
 
-export const saveNewApplication = (application) => {
+export const saveNewApplication = async (application) => {
   try {
     const existing = getStoredApplications();
     const newEntry = {
@@ -43,22 +46,41 @@ export const saveNewApplication = (application) => {
       ...application
     };
     const updated = [newEntry, ...existing];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {}
+
+    // Async sync to backend
+    fetch(`${API_URL}/api/applications`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(application),
+    }).catch(err => console.log('Backend sync error:', err));
+
     return newEntry;
   } catch (err) {
-    console.error('Error saving application locally:', err);
+    console.error('Error saving application:', err);
     return null;
   }
 };
 
-export const deleteStoredApplication = (id) => {
+export const deleteStoredApplication = async (id) => {
   try {
     const existing = getStoredApplications();
-    const updated = existing.filter(a => a.id !== id);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    const updated = existing.filter(a => String(a.id) !== String(id));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {}
+
+    // Delete from backend API
+    fetch(`${API_URL}/api/applications/${id}`, {
+      method: "DELETE"
+    }).catch(err => console.log('Backend delete application error:', err));
+
     return updated;
   } catch (err) {
     console.error('Error deleting stored application:', err);
     return [];
   }
 };
+
